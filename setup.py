@@ -6,16 +6,16 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name='lego_image_converter',  # should match the package folder
     packages=['lego_image_converter'],  # should match the package folder
-    version='0.0.1',  # important for updates
+    version='0.0.2',  # important for updates
     license='MIT',  # should match your chosen license
-    description='Testing installation of Package',
+    description='Testing installation of Package 2',
     long_description=long_description,  # loads your README.md
     long_description_content_type="text/markdown",  # README.md is of type 'markdown'
     author='Zequn Li',
     author_email='zequn1992@gmail.com',
     url='https://github.com/mike-huls/toolbox_public',
     install_requires=['requests', 'numpy', 'matplotlib', 'pillow', 'basic_colormath'],  # list all packages that your package uses
-    keywords=["pypi", "lego_image_converter", "Lego", "Image", "8bit", "Art"],  # descriptive meta-data
+    keywords=["pypi", "lego_image_converter", "Lego", "image", "8bit", "art"],  # descriptive meta-data
     classifiers=[  # https://pypi.org/classifiers
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Documentation',
@@ -23,5 +23,5 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
     ],
 
-    download_url="https://github.com/zl3311/lego_image_converter/archive/refs/tags/0.0.1.tar.gz",
+    download_url="https://github.com/zl3311/lego_image_converter/archive/refs/tags/0.0.2.tar.gz",
 )
