@@ -86,7 +86,7 @@ class Converter:
                 if self.verbose:
                     print(f"Raw image saved to /output/{self.session_id}/{t}_raw.png")
             if not show:
-                fig.close()
+                plt.close()
 
         elif image_type == "trimmed":
             assert self.image_array_trimmed is not None, 'No trimmed image is found. Please trim an image first.'
@@ -100,7 +100,7 @@ class Converter:
                 if self.verbose:
                     print(f"Trimmed image saved to /output/{self.session_id}/{t}_trimmed.png")
             if not show:
-                fig.close()
+                plt.close()
 
         elif image_type == "filtered":
             assert self.image_array_filtered is not None, 'No filtered image is found. Please filter an image first.'
@@ -114,7 +114,7 @@ class Converter:
                 if self.verbose:
                     print(f"Trimmed image saved to /output/{self.session_id}/{t}_filtered.png")
             if not show:
-                fig.close()
+                plt.close()
         elif image_type == "converted":
             assert self.image_array_converted is not None, 'No converted image is found. Please convert an image first.'
             l, w, _ = self.image_array_converted.shape
@@ -137,7 +137,7 @@ class Converter:
                 if self.verbose:
                     print(f"Converted image saved to /output/{self.session_id}/{t}_converted.png")
             if not show:
-                fig.close()
+                plt.close()
         return
 
     def trim_image(self):

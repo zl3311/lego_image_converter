@@ -6,9 +6,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name='lego_image_converter',
     packages=['lego_image_converter'],
-    version='0.1.0',
+    version='0.1.1',
     license='MIT',
-    description='First formal release',
+    description='First minor update after formal release',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Zequn Li',
@@ -23,5 +23,5 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
     ],
 
-    download_url="https://github.com/zl3311/lego_image_converter/archive/refs/tags/0.1.0.tar.gz",
+    download_url="https://github.com/zl3311/lego_image_converter/archive/refs/tags/0.1.1.tar.gz",
 )
