@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from heapq import heappush, heappop
 
-from utility import get_image_array, match_color
-from config import d_config, fig_width, fig_length, default_dpi
+from .utility import get_image_array, match_color
+from .config import d_config, fig_width, fig_length, default_dpi
 
 if not os.path.exists('./output'):
     os.makedirs('./output')
