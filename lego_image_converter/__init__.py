@@ -17,6 +17,14 @@ if not os.path.exists('./upload'):
 
 class Converter:
     def __init__(self, set_id='21226', use_only_colors=None, unlimited_blocks=True, verbose=False):
+        """
+        Initializer of the Converter.
+        You need to specify
+            - set_id:str, the name of the Lego set, which defines the color and quantity of usable blocks.
+            - use_only_colors:bool, whether to restrict the color to be used. Useful for clean up the edges.
+            - unlimited_blocks:bool, whether to restrict the number of blocks. Useful for art effects.
+            - verbose:bool, whether to print out the logs.
+        """
         if set_id not in d_config:
             raise Exception('set_id is not found in predefined specs. Please manually add it to d_config in config.py.')
 
@@ -41,6 +49,11 @@ class Converter:
         self.image_array_converted = None
 
     def load_image(self, **kwargs):
+        """
+        Load an image to the Converter.
+        If you're loading the image from the Internet via an url, use 'url' param.
+        If you're using a local image, upload it to /upload folder first then use 'filename' param.
+        """
         try:
             self.session_id = str(int(time()))
             os.makedirs(f'./output/{self.session_id}')
@@ -56,6 +69,7 @@ class Converter:
         return
 
     def plot_image(self, image_type="raw", save=False, show=False):
+        """Plot images after different procedures."""
         if image_type not in ["raw", "trimmed", "filtered", "converted"]:
             raise Exception("Invalid image_type parameter! Eligible values are raw, trimmed, filtered and converted.")
 
@@ -71,6 +85,9 @@ class Converter:
                 fig.savefig(f'./output/{self.session_id}/{t}_raw.png', dpi=default_dpi)
                 if self.verbose:
                     print(f"Raw image saved to /output/{self.session_id}/{t}_raw.png")
+            if not show:
+                fig.close()
+
         elif image_type == "trimmed":
             assert self.image_array_trimmed is not None, 'No trimmed image is found. Please trim an image first.'
             l, w, _ = self.image_array_trimmed.shape
@@ -82,6 +99,9 @@ class Converter:
                 fig.savefig(f'./output/{self.session_id}/{t}_trimmed.png', dpi=default_dpi)
                 if self.verbose:
                     print(f"Trimmed image saved to /output/{self.session_id}/{t}_trimmed.png")
+            if not show:
+                fig.close()
+
         elif image_type == "filtered":
             assert self.image_array_filtered is not None, 'No filtered image is found. Please filter an image first.'
             l, w, _ = self.image_array_filtered.shape
@@ -93,29 +113,35 @@ class Converter:
                 fig.savefig(f'./output/{self.session_id}/{t}_filtered.png', dpi=default_dpi)
                 if self.verbose:
                     print(f"Trimmed image saved to /output/{self.session_id}/{t}_filtered.png")
+            if not show:
+                fig.close()
         elif image_type == "converted":
             assert self.image_array_converted is not None, 'No converted image is found. Please convert an image first.'
             l, w, _ = self.image_array_converted.shape
             fig, ax = plt.subplots(1, 1, figsize=(fig_width, fig_length / w * l))
             _ = ax.set_facecolor('k')
-            _ = ax.vlines(x=list(range(w+1)), ymin=0, ymax=l, colors='gray', linewidths=.5)
-            _ = ax.hlines(y=list(range(l+1)), xmin=0, xmax=w, colors='gray', linewidths=.5)
+            _ = ax.vlines(x=list(range(w+1)), ymin=0, ymax=l, colors='gray', linewidths=1)
+            _ = ax.hlines(y=list(range(l+1)), xmin=0, xmax=w, colors='gray', linewidths=1)
             for i in range(l):
                 for j in range(w):
                     c = plt.Circle((w-j-.5, i+.5), .35, color=tuple(self.image_array_converted[l-i-1, w-j-1, :]/255))
                     _ = ax.add_patch(c)
-            _ = ax.set_xlim([0, w+.5])
-            _ = ax.set_ylim([-.5, l])
-            _ = ax.axis('off')
+            _ = ax.set_xlim([0, w])
+            _ = ax.set_ylim([0, l])
+            _ = ax.get_xaxis().set_visible(False)
+            _ = ax.get_yaxis().set_visible(False)
 
             if save:
                 t = str(int(time()))
                 fig.savefig(f'./output/{self.session_id}/{t}_converted.png', dpi=default_dpi)
                 if self.verbose:
                     print(f"Converted image saved to /output/{self.session_id}/{t}_converted.png")
+            if not show:
+                fig.close()
         return
 
     def trim_image(self):
+        """trim the raw image for the Lego frame with very limited capability."""
         assert self.image_array_raw is not None, 'No raw image is found! Please load an image first.'
         l, w, _ = self.image_array_raw.shape
         l_, w_ = self.config['frame_length'], self.config['frame_width']
@@ -135,6 +161,7 @@ class Converter:
         return
 
     def filter_image(self):
+        """apply a uniform 2D convolution/filter by taking simple mean values in R/G/B channels."""
         assert self.image_array_trimmed is not None, "No trimmed image is found! Please trim an image first."
         self.image_array_filtered = np.zeros([
             self.config['frame_length']
@@ -158,6 +185,8 @@ class Converter:
         return
 
     def convert_image(self):
+        """convert the filtered image into a similar and eligible color from
+        the Lego set using a nonlinear deltaE metric and a simple heap sort algorithm."""
         assert self.image_array_filtered is not None, "No filtered image is found! Please filter an image first."
         self.image_array_converted = np.zeros_like(self.image_array_filtered)
         l, w, _ = self.image_array_filtered.shape
@@ -198,6 +227,7 @@ class Converter:
         return
 
     def process_image(self):
+        """the meta function of all processing procedures after loading an image."""
         self.trim_image()
         self.filter_image()
         self.convert_image()
