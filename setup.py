@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name='lego_image_converter',  # should match the package folder
     packages=['lego_image_converter'],  # should match the package folder
-    version='0.0.4',  # important for updates
+    version='0.0.5',  # important for updates
     license='MIT',  # should match your chosen license
     description='Testing installation of Package 3',
     long_description=long_description,  # loads your README.md
@@ -23,5 +23,5 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
     ],
 
-    download_url="https://github.com/zl3311/lego_image_converter/archive/refs/tags/0.0.4.tar.gz",
+    download_url="https://github.com/zl3311/lego_image_converter/archive/refs/tags/0.0.5.tar.gz",
 )
