@@ -23,5 +23,5 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
     ],
 
-    download_url="",
+    download_url="https://github.com/zl3311/lego_image_converter/archive/refs/tags/0.0.1.tar.gz",
 )
