@@ -14,7 +14,7 @@ setuptools.setup(
     author='Zequn Li',
     author_email='zequn1992@gmail.com',
     url='https://github.com/mike-huls/toolbox_public',
-    install_requires=['requests', 'numpy', 'matplotlib', 'PIL', 'basic_colormath'],  # list all packages that your package uses
+    install_requires=['requests', 'numpy', 'matplotlib', 'pillow', 'basic_colormath'],  # list all packages that your package uses
     keywords=["pypi", "lego_image_converter", "Lego", "Image", "8bit", "Art"],  # descriptive meta-data
     classifiers=[  # https://pypi.org/classifiers
         'Intended Audience :: Developers',

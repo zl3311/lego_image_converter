@@ -1,3 +1,4 @@
 /venv
 /lego_image_converter/.idea
-
+/dist
+/lego_image_converter.egg-info
