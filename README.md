@@ -34,7 +34,7 @@ and I hope this package can save Lego players and likely programmers as well som
 ## How to use
 Please install the package using 
 
-`pip install lego_image_converter`
+`pip install lego-image-converter`
 
 You can check out some examples on [this Colab notebook](https://colab.research.google.com/drive/17k9ckWLznP_u6kH2rp3Ibujk6voFmn-X#scrollTo=nS3hGf1_kpy4). 
 
