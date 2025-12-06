@@ -50,7 +50,7 @@ include = [
     "LICENSE",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "pytest>=8.0",
     "pytest-cov>=4.0",

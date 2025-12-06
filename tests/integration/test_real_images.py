@@ -214,7 +214,10 @@ class TestCanvasExport:
         """
         from PIL import Image as PILImage
 
-        from tests.utilities.visualize import render_canvas_png, render_canvas_svg
+        try:
+            from tests.utilities.visualize import render_canvas_png, render_canvas_svg
+        except ImportError as e:
+            pytest.skip(f"Visualization dependencies not installed: {e}")
 
         # Test numpy array export
         array = converted_canvas.to_array()
