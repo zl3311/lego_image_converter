@@ -18,10 +18,14 @@ Explain how this feature would help your workflow.
 ## Example Code (Optional)
 ```python
 # How you envision the API working
-from legopic import ConversionSession
+from legopic import ConversionSession, Palette, load_image
 
+image = load_image("my_photo.jpg")
+palette = Palette.from_set(31197)
 session = ConversionSession(image, palette, (48, 48))
-session.new_feature()  # Your proposed feature
+
+# Your proposed feature
+session.new_feature()  # <- Describe what this would do
 ```
 
 ## Alternatives Considered
