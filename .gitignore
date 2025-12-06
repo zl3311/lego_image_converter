@@ -11,3 +11,6 @@ __pycache__
 
 # Test output
 tests/images/output
+
+# Secrets
+.env
