@@ -1,4 +1,13 @@
-/venv
-/lego_image_converter/.idea
+.venv
+__pycache__
+.pytest_cache
+
+# Build artifacts
 /dist
-/lego_image_converter.egg-info
+
+# IDE
+.idea
+.cursor
+
+# Test output
+tests/images/output

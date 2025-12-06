@@ -1,64 +1,389 @@
-# lego_image_converter
- A simple program that converts an image to a Lego-fied picture.
+# legopic
+
+Convert images to LEGO mosaic patterns with perceptual color matching.
+
+[![CI](https://github.com/zl3311/lego_image_converter/actions/workflows/ci.yml/badge.svg)](https://github.com/zl3311/lego_image_converter/actions/workflows/ci.yml)
+[![PyPI version](https://badge.fury.io/py/legopic.svg)](https://badge.fury.io/py/legopic)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
 ---
 
+## Installation
+
+```bash
+pip install legopic
+```
+
+## Quick Start
+
+### Basic Conversion
+
+```python
+from legopic import ConversionSession, ConvertConfig, Palette, load_image
+
+# Load image and palette
+image = load_image("photo.jpg")
+palette = Palette.from_set(31197)  # Andy Warhol's Marilyn Monroe set
+
+# Create session and convert
+session = ConversionSession(image, palette, canvas_size=(48, 48))
+session.convert()
+
+# Access result
+print(f"Similarity score: {session.similarity_score:.2f}")
+rgb_array = session.canvas.to_array()  # numpy array (48, 48, 3)
+
+for row in session.canvas.cells:
+    for cell in row:
+        print(f"({cell.x}, {cell.y}): {cell.color.name}")
+```
+
+### Using All Standard LEGO Colors
+
+```python
+from legopic import ConversionSession, Palette, load_image
+
+# Load all 41 standard (opaque) LEGO colors
+palette = Palette.from_set()  # No set_id = all standard colors
+
+image = load_image("photo.jpg")
+session = ConversionSession(image, palette, (48, 48))
+session.convert()
+```
+
+### Using a Custom Palette
+
+```python
+from legopic import ConversionSession, Palette, Color, load_image
+
+# Create a custom palette
+palette = Palette([
+    Color((255, 0, 0), "Red"),
+    Color((0, 255, 0), "Green"),
+    Color((0, 0, 255), "Blue"),
+    Color((255, 255, 255), "White"),
+    Color((0, 0, 0), "Black"),
+])
+
+image = load_image("photo.jpg")
+session = ConversionSession(image, palette, canvas_size=(48, 48))
+session.convert()
+```
+
+### Different Downsampling Methods
+
+```python
+from legopic import ConversionSession, ConvertConfig, Palette, load_image
+
+image = load_image("photo.jpg")
+palette = Palette.from_set(31198)  # The Beatles
+
+session = ConversionSession(image, palette, (48, 48))
+
+# Use different methods via ConvertConfig
+config = ConvertConfig(method='match_then_mode')  # Best for sharp edges
+session.convert(config)
+
+# Re-convert with different method
+session.reconvert(ConvertConfig(method='mean_then_match'))  # Best for gradients
+```
+
+### Interactive Editing Workflow
+
+```python
+from legopic import ConversionSession, ConvertConfig, Palette, Color, load_image
+
+image = load_image("photo.jpg")
+palette = Palette.from_set(31197)
+session = ConversionSession(image, palette, (48, 48))
+
+# Initial conversion
+session.convert(ConvertConfig(method='match_then_mode'))
+print(f"Initial similarity: {session.similarity_score:.2f}")
+
+# Pin a cell and change its color
+custom_blue = Color((0, 100, 200), "Custom Blue")
+session.pin(5, 10, custom_blue)  # Pin cell at (5, 10) to custom blue
+
+# Bulk swap a color throughout the canvas
+old_red = Color((179, 0, 6), "Red")
+new_orange = Color((255, 126, 20), "Orange")
+count = session.swap_color(old_red, new_orange)
+print(f"Swapped {count} cells from red to orange")
+
+# Re-convert with a different method, preserving pinned cells
+session.reconvert(ConvertConfig(method='mean_then_match'), keep_pins=True)
+
+# Get pinned cells
+pinned = session.get_pinned_cells()
+print(f"Pinned cells: {pinned}")
+```
+
+### Inventory-Limited Conversion
+
+```python
+from legopic import ConversionSession, ConvertConfig, Palette, load_image
+
+image = load_image("photo.jpg")
+palette = Palette.from_set(31197)  # Has specific element counts
+
+session = ConversionSession(image, palette, (48, 48))
+
+# Enable inventory limits - cells fall back to next-best color when preferred runs out
+config = ConvertConfig(
+    method='match_then_mode',
+    limit_inventory=True,
+    algorithm='priority_greedy'  # Fast heuristic
+)
+session.convert(config)
+```
+
+### Exporting for Building Guide
+
+```python
+from legopic import ConversionSession, Palette, load_image
+
+image = load_image("photo.jpg")
+palette = Palette.from_set(31197)
+session = ConversionSession(image, palette, (48, 48))
+session.convert()
+
+# Bill of Materials
+bom = session.get_bill_of_materials()
+for entry in bom:
+    status = "✓" if entry.in_palette else "⚠ custom"
+    print(f"{entry.color.name}: {entry.count_needed} tiles {status}")
+
+# Grid data for rendering
+grid = session.get_grid_data()
+for y, row in enumerate(grid):
+    for x, cell_data in enumerate(row):
+        print(f"({x},{y}): {cell_data.color.name}, ΔE={cell_data.delta_e:.1f}")
+
+# Similarity map (identify problem areas)
+sim_map = session.get_similarity_map()
+max_delta_e = max(max(row) for row in sim_map)
+print(f"Worst color match: ΔE={max_delta_e:.1f}")
+```
+
+## Available LEGO Sets
+
+The package includes data for official LEGO Art sets:
+
+| Set ID | Name | Canvas Size |
+|--------|------|-------------|
+| 31197 | Andy Warhol's Marilyn Monroe | 48×48 |
+| 31198 | The Beatles | 48×48 |
+| 31202 | Disney's Mickey Mouse | 48×48 |
+| 31203 | World Map | 128×80 |
+| 31204 | Elvis Presley "The King" | 48×48 |
+| 21226 | Art Project – Create Together | 48×48 |
+
+```python
+from legopic.data import list_available_sets, get_set_dimensions
+
+# List all sets
+for set_id, name in list_available_sets():
+    width, height = get_set_dimensions(set_id)
+    print(f"{set_id}: {name} ({width}×{height})")
+```
+
+## Features
+
+### Color Matching
+
+Uses the Delta E (CIE2000) perceptual color distance metric via `basic_colormath`, which accounts for non-linearities in human vision perception.
+
+### Downsampling Methods
+
+| Method | Description | Best For |
+|--------|-------------|----------|
+| `mean_then_match` | Average pixel colors, then match to palette | Smooth gradients |
+| `match_then_mean` | Match each pixel, then average results | Balanced approach |
+| `match_then_mode` | Match each pixel, take most common (default) | Sharp edges, distinct colors |
+
+### Dimension Validation
+
+For uniform stride downsampling, image and canvas dimensions must satisfy:
+
+```
+image_width // canvas_width == image_height // canvas_height
+```
+
+This ensures every canvas cell maps to image pixels with a uniform block size.
+
+**Valid examples:**
+- Image 100×100 → Canvas 10×10 ✓
+- Image 100×91 → Canvas 10×10 ✓ (last row has 1 pixel)
+
+**Invalid examples:**
+- Image 100×90 → Canvas 10×10 ✗ (height stride differs)
+- Image 92×101 → Canvas 10×10 ✗ (width stride differs)
+
+## API Reference
+
+### Main API
+
+| Class | Description |
+|-------|-------------|
+| `ConversionSession(image, palette, canvas_size)` | Main workflow manager for conversion |
+| `ConvertConfig(method, limit_inventory, algorithm)` | Soft parameters for conversion |
+
+### Models
+
+| Class | Description |
+|-------|-------------|
+| `Color(rgb, name=None)` | RGB color with optional name |
+| `Element(element_id, design_id, variant_id, count=None)` | LEGO element variant for inventory tracking |
+| `Cell(color, x=None, y=None)` | Single pixel/block with position |
+| `Image(array)` | Input image wrapper |
+| `Canvas(width, height)` | Output mosaic grid |
+| `Palette(colors)` | Collection of available colors with element variants |
+| `BOMEntry` | Bill of materials entry for export |
+| `CellData` | Cell data for grid export |
+
+### ConversionSession Methods
+
+| Method | Description |
+|--------|-------------|
+| `convert(config=None)` | Run initial conversion |
+| `reconvert(config=None, keep_pins=True)` | Re-convert preserving pinned cells |
+| `pin(x, y, new_color=None)` | Pin a cell, optionally changing its color |
+| `unpin(x, y)` | Unpin a cell |
+| `swap_color(old, new, pin=True)` | Bulk swap all cells of one color |
+| `get_pinned_cells()` | Get list of (x, y) pinned coordinates |
+| `get_bill_of_materials()` | Get BOM for building guide |
+| `get_grid_data()` | Get 2D cell data for rendering |
+| `get_similarity_map()` | Get per-cell Delta E values |
+
+### ConversionSession Properties
+
+| Property | Description |
+|----------|-------------|
+| `image` | Source image (read-only) |
+| `palette` | Available colors (read-only) |
+| `canvas_size` | Target dimensions (read-only) |
+| `canvas` | Current conversion result |
+| `config` | Current configuration |
+| `similarity_score` | Average Delta E across all cells |
+
+### Palette Methods
+
+| Method | Description |
+|--------|-------------|
+| `Palette.from_set(set_id=None, standard_only=True)` | Load from LEGO set or all colors |
+| `palette.colors` | List of unique Color objects |
+| `palette.elements` | List of all Element objects |
+| `palette.get_elements_for_color(color)` | Get element variants for a color |
+
+### Canvas Methods
+
+| Method | Description |
+|--------|-------------|
+| `Canvas.from_set(set_id)` | Create empty canvas with set dimensions |
+| `canvas.get_cell(x, y)` | Get cell at coordinates |
+| `canvas.to_array()` | Convert to numpy RGB array |
+
+### Utility Functions
+
+| Function | Description |
+|----------|-------------|
+| `load_image(source)` | Load from file path or URL |
+| `downsize(image, palette, width, height, method)` | Low-level resize with color matching |
+| `match_color(targets, palette)` | Raw color matching utility |
+
+## Development
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/zl3311/lego_image_converter.git
+cd lego_image_converter
+
+# Install with uv (recommended)
+uv sync --all-groups
+
+# Or with pip
+pip install -e ".[dev]"
+```
+
+### Testing
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov=legopic --cov-report=term-missing
+```
+
+### Code Quality
+
+```bash
+# Lint
+uv run ruff check src/ tests/
+
+# Format
+uv run ruff format src/ tests/
+
+# Type check
+uv run mypy src/legopic/
+```
+
+### Contributing New Colors or Sets
+
+When adding new LEGO colors or sets via PR, the CI automatically validates data integrity. The following checks run on every PR:
+
+#### `colors.csv` Validation
+| Check | Description |
+|-------|-------------|
+| Unique `element_id` | Primary key must be unique |
+| No exact duplicates | Same (design_id, name, r, g, b, variant_id) not allowed |
+| Consistent RGB per name | Same color name must have same RGB values |
+| Valid RGB range | Values must be integers in [0, 255] |
+| Valid `is_standard` | Must be "true" or "false" |
+| Valid `variant_id` | Must be a positive integer |
+
+#### `sets.csv` Validation
+| Check | Description |
+|-------|-------------|
+| Unique `set_id` | Primary key must be unique |
+| Unique names | Set names should not duplicate |
+| Valid dimensions | Width and height must be positive integers |
+| Dimension limits | Canvas cannot exceed 1024×1024 studs |
+
+#### `elements.csv` Validation
+| Check | Description |
+|-------|-------------|
+| Unique pairs | (set_id, element_id) must be unique |
+| Valid `element_id` | Must exist in `colors.csv` |
+| Valid `set_id` | Must exist in `sets.csv` |
+| Valid count | Must be a positive integer |
+
+#### Cross-file Consistency
+| Check | Description |
+|-------|-------------|
+| Sets have elements | Every set must have at least one element |
+| Consistent `design_id` | Must match between `colors.csv` and `elements.csv` |
+
+Run these checks locally before submitting:
+
+```bash
+uv run pytest tests/unit/test_data_integrity.py -v
+```
+
 ## Background
-Here's how this simple package started. 
-(Feel free to skip if you're in a hurry, but why would anyone trying to enjoy Lego and to kill time in a such hurry?)
 
-Originally, I purchased [Lego Art Project 21226](https://www.lego.com/en-us/product/art-project-create-together-21226)
-(now retired) as the Thanksgiving gift for myself back in 2022, but I didn't have the chance to 
-put up the pieces, since recession is kind of suffocating many folks, including myself.
+Originally created for [LEGO Art Project 21226](https://www.lego.com/en-us/product/art-project-create-together-21226), 
+this package helps prototype LEGO mosaic designs by:
 
-It is until mid-2023 that I finally had some room to breathe, and I realize that I haven't opened this toy that 
-has been sitting in the corner of my room 
-for like 8 months or so. 
-So I reckon it's probably a decent timing to bring some innocent joy back to my life. 
+1. Converting any image to the constrained color palette of available LEGO bricks
+2. Downsizing to the target canvas dimensions (e.g., 48×48 studs)
+3. Using perceptually accurate color matching
 
-The main bummer is that Lego includes barely enough blocks only to build the 
-images in their manuals 
-(blue blocks are the most common (660 pieces), but considering a 48x48=2304 canvas, it means you need colorful 
-background otherwise you'll run out of some color blocks), and that is not enough if you want to do something fancy. 
-I understand that Lego is a for-profit company, and real hardcore Lego players spend tons of money 
-on buying customized blocks themselves (and I'm not prodigal enough to be one of them). 
-Still, I feel like Lego is not generous enough for such a brilliant idea for this Art Project product. 
+This saves time when planning custom LEGO Art builds, allowing you to preview the result before committing to a design.
 
-Another issue is that there isn't a tool that automatically converts a random image into a prototype as if you were to 
-build it in Lego, which means you might spend tons of time working on something that may not be undesirable at the end of the day, 
-and we adults are short on time. This is the reason why I build this package. You're welcome, Lego Engineering team.
+## License
 
-Don't get me wrong: I'm still a huge fan of Lego, 
-and I hope this package can save Lego players and likely programmers some time prototyping their ideas.
-
-## How to use
-Please install the package using 
-
-`pip install lego-image-converter`
-
-You can check out some examples on [this Colab notebook](https://colab.research.google.com/drive/17k9ckWLznP_u6kH2rp3Ibujk6voFmn-X#scrollTo=nS3hGf1_kpy4). 
-
-**Disclaimer: I do not own any right to the pictures in examples, 
-and they are not intended for profit either. If you're the owner of the pictures
-and would like me to remove them, feel free to reach out, and I'm happy to remove them for you.** 
-
-I screenshot the pictures from the Internet, namely
-- Tsunami from [here](https://www.zazzle.com/the_great_wave_off_kanagawa_8_bit_pixel_art_plaque-200560049736055877).
-- Cheetah's logo from [here](https://is3-ssl.mzstatic.com/image/thumb/Purple125/v4/73/dd/09/73dd0955-fabe-9a96-cc09-641dbf9b9141/source/512x512bb.jpg).
-- Twitter's logo from [here](https://commons.wikimedia.org/wiki/File:Logo_of_Twitter.svg).
-- Doge's logo from [here](https://variety.com/2023/digital/news/elon-musk-twitter-logo-doge-dogecoin-meme-1235572343/).
-
-## Notes
-
-- The trimming procedure of this package is super dumb because it's too tedious to do the CV stuff
-  (like figure out the center of the picture, majorly and minorly adjust the anchoring point, etc.) 
- for such a mini package and I'm not a CV expert. 
-My suggestion for you is to start your screenshot from the lower left corner, drag it until 
-either the length or width dimension is desirable, and leave extra buffer in the other dimension. 
-The trimming algorithm can only handle this situation properly, so it is not intelligent.
-
-- I was using a naive Euclidean distance on RGB channel for matching pixels and Lego colors, and it sucks. 
-I found this [colormath](https://python-colormath.readthedocs.io/en/latest/) package useful in 
-addressing the nonlinearities of human vision perception, and it performs decently well.
-
-- I'm using `unlimited_blocks=True` for the sake of illustration.
+MIT License - see [LICENSE](LICENSE) for details.
