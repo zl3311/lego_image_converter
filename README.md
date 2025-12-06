@@ -5,7 +5,7 @@ Convert images to LEGO mosaic patterns with perceptual color matching.
 [![CI](https://github.com/zl3311/lego_image_converter/actions/workflows/ci.yml/badge.svg)](https://github.com/zl3311/lego_image_converter/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/zl3311/lego_image_converter/graph/badge.svg)](https://codecov.io/gh/zl3311/lego_image_converter)
 [![PyPI version](https://badge.fury.io/py/legopic.svg)](https://badge.fury.io/py/legopic)
-[![PyPI Downloads](https://static.pepy.tech/badge/legopic/month)](https://pepy.tech/project/legopic)
+[![Downloads](https://img.shields.io/pepy/dt/legopic)](https://pepy.tech/project/legopic)
 [![Python](https://img.shields.io/pypi/pyversions/legopic)](https://pypi.org/project/legopic/)
 [![License](https://img.shields.io/github/license/zl3311/lego_image_converter)](https://github.com/zl3311/lego_image_converter/blob/main/LICENSE)
 [![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
