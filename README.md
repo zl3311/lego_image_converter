@@ -3,8 +3,13 @@
 Convert images to LEGO mosaic patterns with perceptual color matching.
 
 [![CI](https://github.com/zl3311/lego_image_converter/actions/workflows/ci.yml/badge.svg)](https://github.com/zl3311/lego_image_converter/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/zl3311/lego_image_converter/graph/badge.svg)](https://codecov.io/gh/zl3311/lego_image_converter)
 [![PyPI version](https://badge.fury.io/py/legopic.svg)](https://badge.fury.io/py/legopic)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/legopic)](https://pypi.org/project/legopic/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 ---
 
@@ -220,6 +225,45 @@ This ensures every canvas cell maps to image pixels with a uniform block size.
 - Image 100×90 → Canvas 10×10 ✗ (height stride differs)
 - Image 92×101 → Canvas 10×10 ✗ (width stride differs)
 
+## About LEGO Mosaics
+
+### What Are LEGO Mosaics?
+
+LEGO mosaics are pixel-art style creations built using 1×1 round tiles (commonly called "studs" or "dots"). Each tile represents a single pixel, and when arranged on a baseplate, they form a cohesive image — similar to pointillism or cross-stitch patterns.
+
+The official **LEGO Art** line (sets like 31197, 31198, etc.) popularized this technique, offering curated color palettes and building instructions for iconic portraits and artwork.
+
+### The 1×1 Round Tile (Element 98138)
+
+The primary building block for LEGO mosaics is the **1×1 round plate** with design ID **98138**. This element:
+
+- Has a smooth, circular top surface
+- Sits flat on baseplates and standard LEGO bricks
+- Comes in 40+ official colors
+- Creates the characteristic "dotted" mosaic appearance
+
+### Where to Buy LEGO Tiles
+
+Once you've designed your mosaic with `legopic`, you'll need to source the actual bricks. Here are the main marketplaces:
+
+| Marketplace | Description |
+|-------------|-------------|
+| [BrickLink](https://www.bricklink.com/v2/search.page?q=98138#T=A) | The largest secondary LEGO marketplace. Search by element ID (98138) to find tiles in any color. |
+| [BrickOwl](https://www.brickowl.com/search/catalog?query=98138) | Alternative marketplace with competitive pricing and international sellers. |
+| [LEGO Pick-a-Brick](https://www.lego.com/pick-and-build/pick-a-brick) | Official LEGO store. Limited color selection but guaranteed authenticity. |
+
+**Pro tip**: Use the Bill of Materials export from `legopic` to know exactly how many tiles of each color you need before ordering.
+
+### Contributing New Colors & Sets
+
+The LEGO color palette evolves over time, and new Art sets are released regularly. **We welcome community contributions!**
+
+If you'd like to add:
+- **New colors** — Add entries to `src/legopic/data/colors.csv`
+- **New sets** — Add set info to `sets.csv` and element mappings to `elements.csv`
+
+See the [Contributing](#contributing-new-colors-or-sets) section for validation rules and submit a PR. The CI will automatically verify data integrity.
+
 ## API Reference
 
 ### Main API
@@ -375,14 +419,19 @@ uv run pytest tests/unit/test_data_integrity.py -v
 
 ## Background
 
-Originally created for [LEGO Art Project 21226](https://www.lego.com/en-us/product/art-project-create-together-21226), 
-this package helps prototype LEGO mosaic designs by:
+This project was born from a passion for LEGO Art and the desire to create custom mosaic portraits.
 
-1. Converting any image to the constrained color palette of available LEGO bricks
-2. Downsizing to the target canvas dimensions (e.g., 48×48 studs)
-3. Using perceptually accurate color matching
+Originally created for [LEGO Art Project 21226](https://www.lego.com/en-us/product/art-project-create-together-21226) — a collaborative set designed for creative freedom — this package helps you prototype LEGO mosaic designs by:
 
-This saves time when planning custom LEGO Art builds, allowing you to preview the result before committing to a design.
+1. **Converting any image** to the constrained color palette of available LEGO tiles
+2. **Downsizing intelligently** to your target canvas dimensions (e.g., 48×48 studs)
+3. **Using perceptually accurate color matching** via the CIEDE2000 algorithm
+
+Whether you're recreating a family photo, a pet portrait, or pixel art, `legopic` lets you preview exactly how your design will look before ordering hundreds of tiles. No more guesswork — just load an image, pick a palette, and see the result instantly.
+
+### Why Perceptual Color Matching?
+
+Simple RGB distance doesn't account for how humans actually perceive color. Two colors might be mathematically similar but look completely different to our eyes. `legopic` uses the **Delta E (CIE2000)** metric, which models human vision to find the closest *perceptual* match — resulting in mosaics that look right, not just mathematically correct.
 
 ## License
 
