@@ -178,3 +178,52 @@ class TestConversionSession:
         assert isinstance(canvas, Canvas)
         assert canvas.width == 10
         assert canvas.height == 10
+
+    def test_session_export_bricklink_xml(self, test_image):
+        """export_bricklink_xml returns valid XML string."""
+        palette = Palette.from_set(31197)
+        session = ConversionSession(test_image, palette, (10, 10))
+        session.convert()
+
+        xml = session.export_bricklink_xml()
+
+        assert isinstance(xml, str)
+        assert "<INVENTORY>" in xml
+        assert "</INVENTORY>" in xml
+        assert "<ITEM>" in xml
+        assert "<ITEMTYPE>P</ITEMTYPE>" in xml
+        assert "<ITEMID>98138</ITEMID>" in xml
+        assert "<COLOR>" in xml
+        assert "<MINQTY>" in xml
+
+    def test_session_export_rebrickable_csv(self, test_image):
+        """export_rebrickable_csv returns valid CSV string."""
+        palette = Palette.from_set(31197)
+        session = ConversionSession(test_image, palette, (10, 10))
+        session.convert()
+
+        csv = session.export_rebrickable_csv()
+
+        assert isinstance(csv, str)
+        lines = csv.split("\n")
+        assert lines[0] == "Part,Color,Quantity"
+        assert len(lines) > 1
+
+        # Verify CSV row format (Part,Color,Quantity)
+        for line in lines[1:]:
+            parts = line.split(",")
+            assert len(parts) == 3
+            assert parts[0] == "98138"  # Design ID
+            assert parts[1].isdigit()  # Rebrickable color ID
+            assert parts[2].isdigit()  # Quantity
+
+    def test_session_export_before_convert_raises(self, test_image):
+        """Export methods raise RuntimeError if convert() not called."""
+        palette = Palette.from_set(31197)
+        session = ConversionSession(test_image, palette, (10, 10))
+
+        with pytest.raises(RuntimeError, match="No conversion yet"):
+            session.export_bricklink_xml()
+
+        with pytest.raises(RuntimeError, match="No conversion yet"):
+            session.export_rebrickable_csv()
