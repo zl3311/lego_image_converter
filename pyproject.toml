@@ -1,6 +1,6 @@
 [project]
 name = "legopic"
-version = "0.4.2"
+version = "0.4.3"
 description = "Convert images to Lego mosaic patterns with perceptual color matching"
 readme = "README.md"
 license = "MIT"
