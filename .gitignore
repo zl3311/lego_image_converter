@@ -21,3 +21,6 @@ tests/images/output
 
 # Secrets
 .env
+
+# Feature Requests
+feature_requests/

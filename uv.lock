@@ -596,7 +596,7 @@ wheels = [
 
 [[package]]
 name = "legopic"
-version = "0.3.0"
+version = "0.3.1"
 source = { editable = "." }
 dependencies = [
     { name = "basic-colormath" },
@@ -606,7 +606,7 @@ dependencies = [
     { name = "requests" },
 ]
 
-[package.dev-dependencies]
+[package.optional-dependencies]
 dev = [
     { name = "matplotlib" },
     { name = "mypy" },
@@ -621,22 +621,19 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "basic-colormath", specifier = ">=0.1" },
+    { name = "matplotlib", marker = "extra == 'dev'", specifier = ">=3.7" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.8" },
     { name = "numpy", specifier = ">=1.24" },
     { name = "pillow", specifier = ">=9.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0" },
+    { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3.5" },
     { name = "requests", specifier = ">=2.28" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.3" },
+    { name = "svgwrite", marker = "extra == 'dev'", specifier = ">=1.4" },
+    { name = "types-requests", marker = "extra == 'dev'", specifier = ">=2.28" },
 ]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "matplotlib", specifier = ">=3.7" },
-    { name = "mypy", specifier = ">=1.8" },
-    { name = "pytest", specifier = ">=8.0" },
-    { name = "pytest-cov", specifier = ">=4.0" },
-    { name = "pytest-xdist", specifier = ">=3.5" },
-    { name = "ruff", specifier = ">=0.3" },
-    { name = "svgwrite", specifier = ">=1.4" },
-    { name = "types-requests", specifier = ">=2.28" },
-]
+provides-extras = ["dev"]
 
 [[package]]
 name = "librt"

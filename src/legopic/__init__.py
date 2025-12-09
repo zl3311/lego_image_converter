@@ -27,11 +27,23 @@ Example usage:
     >>> bom = session.get_bill_of_materials()
     >>> grid = session.get_grid_data()
     >>> similarity_map = session.get_similarity_map()
+    >>>
+    >>> # Export for external platforms
+    >>> xml = session.export_bricklink_xml()  # BrickLink wanted list
+    >>> csv = session.export_rebrickable_csv()  # Rebrickable parts list
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
-from .core import ConversionSession, ConvertConfig, downsize, load_image, match_color
+from .core import (
+    ConversionSession,
+    ConvertConfig,
+    downsize,
+    export_bricklink_xml,
+    export_rebrickable_csv,
+    load_image,
+    match_color,
+)
 from .models import BOMEntry, Canvas, Cell, CellData, Color, Element, Image, Palette
 
 __all__ = [
@@ -52,4 +64,7 @@ __all__ = [
     "load_image",
     "downsize",
     "match_color",
+    # Export functions
+    "export_bricklink_xml",
+    "export_rebrickable_csv",
 ]
