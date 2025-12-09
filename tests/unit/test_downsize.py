@@ -174,3 +174,43 @@ class TestDownsizeMethods:
         result = downsize(image, rgb_palette, 1, 1, method="mean_then_match")
         # Just verify it runs and produces a result
         assert result.get_cell(0, 0).color is not None
+
+
+class TestDownsizeScalability:
+    """Scalability tests for match_then_mode at various canvas sizes.
+
+    Tests that the optimized batched implementation works correctly
+    across a range of canvas sizes from 16x16 to 256x256.
+    """
+
+    @pytest.fixture
+    def large_image(self):
+        """A 1024x1024 random image for scalability testing."""
+        np.random.seed(42)
+        array = np.random.randint(0, 256, (1024, 1024, 3), dtype=np.uint8)
+        return Image(array)
+
+    @pytest.fixture
+    def test_palette(self):
+        """A palette with multiple colors for scalability testing."""
+        return Palette(
+            [
+                Color((255, 0, 0), name="Red"),
+                Color((0, 255, 0), name="Green"),
+                Color((0, 0, 255), name="Blue"),
+                Color((255, 255, 0), name="Yellow"),
+                Color((0, 255, 255), name="Cyan"),
+                Color((255, 0, 255), name="Magenta"),
+                Color((0, 0, 0), name="Black"),
+                Color((255, 255, 255), name="White"),
+            ]
+        )
+
+    @pytest.mark.parametrize("canvas_size", [16, 32, 64, 128, 256])
+    def test_match_then_mode_scalability(self, large_image, test_palette, canvas_size):
+        """match_then_mode runs without error at various canvas sizes."""
+        result = downsize(
+            large_image, test_palette, canvas_size, canvas_size, method="match_then_mode"
+        )
+        assert result.width == canvas_size
+        assert result.height == canvas_size

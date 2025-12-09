@@ -9,7 +9,6 @@ Methods:
     match_then_mode: Match each pixel to palette first, then take mode.
 """
 
-from collections import Counter
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -182,18 +181,29 @@ def downsize(
                 canvas.set_cell(cx, cy, palette.colors[best_idx])
 
     elif method == "match_then_mode":
-        # For each block: match all pixels to palette, then take mode
+        # Optimized approach: batch all pixels into a single match_color call.
+        # This reduces O(n_cells) function calls to O(1), significantly faster.
+
+        # Match all image pixels to palette at once (single call for all ~1M pixels)
+        all_pixels = image_array.reshape(-1, 3)
+        _, rankings = match_color(all_pixels, palette_rgb)
+        best_per_pixel = rankings[:, 0]
+
+        # Reshape matched indices back to image dimensions
+        matched_image = best_per_pixel.reshape(image_array.shape[0], image_array.shape[1])
+
+        # Compute mode (most common palette index) for each canvas cell's block
+        n_palette = len(palette_rgb)
         for cy in range(canvas_height):
             for cx in range(canvas_width):
-                block_pixels = _get_block_pixels(image_array, cx, cy, stride)
+                y_start = cy * stride
+                y_end = min((cy + 1) * stride, matched_image.shape[0])
+                x_start = cx * stride
+                x_end = min((cx + 1) * stride, matched_image.shape[1])
 
-                # Match each pixel to palette
-                _, rankings = match_color(block_pixels, palette_rgb)
-                matched_indices = rankings[:, 0]
-
-                # Find mode (most common matched color)
-                counter = Counter(matched_indices)
-                mode_idx = counter.most_common(1)[0][0]
+                block_indices = matched_image[y_start:y_end, x_start:x_end].flatten()
+                counts = np.bincount(block_indices, minlength=n_palette)
+                mode_idx = counts.argmax()
                 canvas.set_cell(cx, cy, palette.colors[mode_idx])
 
     return canvas
