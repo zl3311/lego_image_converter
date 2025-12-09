@@ -171,6 +171,33 @@ max_delta_e = max(max(row) for row in sim_map)
 print(f"Worst color match: ΔE={max_delta_e:.1f}")
 ```
 
+### Exporting to External Platforms
+
+Export your parts list directly to BrickLink or Rebrickable for easy ordering:
+
+```python
+from legopic import ConversionSession, Palette, load_image
+
+image = load_image("photo.jpg")
+palette = Palette.from_set(31197)
+session = ConversionSession(image, palette, (48, 48))
+session.convert()
+
+# Export to BrickLink XML (for wanted list upload)
+xml = session.export_bricklink_xml()
+with open("wanted_list.xml", "w") as f:
+    f.write(xml)
+
+# Export to Rebrickable CSV (for parts list import)
+csv = session.export_rebrickable_csv()
+with open("parts_list.csv", "w") as f:
+    f.write(csv)
+```
+
+The exports include platform-specific color IDs so you can directly upload to:
+- **[BrickLink](https://www.bricklink.com)** — Upload XML as a Wanted List
+- **[Rebrickable](https://rebrickable.com)** — Import CSV as a Parts List
+
 ## Available LEGO Sets
 
 The package includes data for official LEGO Art sets:
@@ -252,7 +279,7 @@ Once you've designed your mosaic with `legopic`, you'll need to source the actua
 | [BrickOwl](https://www.brickowl.com/search/catalog?query=98138) | Alternative marketplace with competitive pricing and international sellers. |
 | [LEGO Pick-a-Brick](https://www.lego.com/pick-and-build/pick-a-brick) | Official LEGO store. Limited color selection but guaranteed authenticity. |
 
-**Pro tip**: Use the Bill of Materials export from `legopic` to know exactly how many tiles of each color you need before ordering.
+**Pro tip**: Use `session.export_bricklink_xml()` to generate a ready-to-upload wanted list for BrickLink, or `session.export_rebrickable_csv()` for Rebrickable. No manual counting needed!
 
 ### Contributing New Colors & Sets
 
@@ -299,6 +326,8 @@ See the [Contributing](#contributing-new-colors-or-sets) section for validation 
 | `get_bill_of_materials()` | Get BOM for building guide |
 | `get_grid_data()` | Get 2D cell data for rendering |
 | `get_similarity_map()` | Get per-cell Delta E values |
+| `export_bricklink_xml()` | Export BOM as BrickLink XML wanted list |
+| `export_rebrickable_csv()` | Export BOM as Rebrickable CSV parts list |
 
 ### ConversionSession Properties
 
@@ -335,6 +364,8 @@ See the [Contributing](#contributing-new-colors-or-sets) section for validation 
 | `load_image(source)` | Load from file path or URL |
 | `downsize(image, palette, width, height, method)` | Low-level resize with color matching |
 | `match_color(targets, palette)` | Raw color matching utility |
+| `export_bricklink_xml(bom)` | Export BOM list to BrickLink XML format |
+| `export_rebrickable_csv(bom)` | Export BOM list to Rebrickable CSV format |
 
 ## Development
 
