@@ -33,7 +33,7 @@ Example usage:
     >>> csv = session.export_rebrickable_csv()  # Rebrickable parts list
 """
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 from .core import (
     ConversionSession,

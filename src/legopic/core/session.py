@@ -237,21 +237,16 @@ class ConversionSession:
         inventory-limited conversion (assignment algorithms).
 
         Args:
-            pinned_cells (dict[tuple[int, int], Color] | None): Dict of
-                (x, y) -> Color for cells to preserve as fixed constraints.
+            pinned_cells: Dict of (x, y) -> Color for cells to preserve
+                as fixed constraints, or None.
 
         Returns:
             Canvas: Converted Canvas.
         """
-        assert self._config is not None  # Set by convert() before calling this method
-        width, height = self._canvas_size
-
+        assert self._config is not None
         if self._config.limit_inventory:
-            # Use inventory-limited assignment
             return self._run_inventory_limited_conversion(pinned_cells)
-        else:
-            # Use standard unlimited conversion
-            return self._run_unlimited_conversion(pinned_cells)
+        return self._run_unlimited_conversion(pinned_cells)
 
     def _run_unlimited_conversion(
         self, pinned_cells: dict[tuple[int, int], Color] | None
@@ -262,17 +257,16 @@ class ConversionSession:
         color for each cell regardless of inventory.
 
         Args:
-            pinned_cells (dict[tuple[int, int], Color] | None): Dict of
-                (x, y) -> Color for cells to preserve.
+            pinned_cells: Dict of (x, y) -> Color for cells to preserve,
+                or None.
 
         Returns:
             Canvas: Converted Canvas.
         """
         from .downsize import downsize
 
-        assert self._config is not None  # Set by convert() before calling this method
+        assert self._config is not None
         width, height = self._canvas_size
-
         canvas = downsize(self._image, self._palette, width, height, method=self._config.method)
 
         # Apply pinned cells (overwrite algorithm's choices)
@@ -293,21 +287,17 @@ class ConversionSession:
         preferred color fall back to the next best available.
 
         Args:
-            pinned_cells (dict[tuple[int, int], Color] | None): Dict of
-                (x, y) -> Color for cells to preserve.
+            pinned_cells: Dict of (x, y) -> Color for cells to preserve,
+                or None.
 
         Returns:
             Canvas: Converted Canvas.
         """
         from .assignment import optimal, priority_greedy
 
-        assert self._config is not None  # Set by convert() before calling this method
+        assert self._config is not None
         width, height = self._canvas_size
-
-        # Select algorithm
         assign_func = optimal if self._config.algorithm == "optimal" else priority_greedy
-
-        # Run assignment algorithm
         result = assign_func(
             target_colors=self._target_colors,
             palette=self._palette,
@@ -341,13 +331,17 @@ class ConversionSession:
         return canvas
 
     def _compute_all_delta_e(self) -> None:
-        """Compute Delta E for all cells against original image colors."""
-        from basic_colormath import get_delta_e_matrix
+        """Compute Delta E for all cells against original image colors.
+
+        Uses pairwise comparison (each cell vs its corresponding target)
+        via get_deltas_e, which is O(n) rather than O(n²).
+        """
+        from basic_colormath import get_deltas_e
 
         assert self._canvas is not None  # Set by convert() before calling this method
         canvas = self._canvas
 
-        # Build arrays of canvas colors and target colors
+        # Build array of canvas colors (assigned palette colors)
         canvas_colors = np.array(
             [
                 canvas.cells[y][x].color.rgb
@@ -359,16 +353,15 @@ class ConversionSession:
 
         target_colors = self._target_colors.reshape(-1, 3)
 
-        # Compute delta E for each cell against its target
-        # get_delta_e_matrix returns (n_canvas, n_target) matrix
-        # We want diagonal: each canvas cell vs its corresponding target
-        delta_e_matrix = get_delta_e_matrix(canvas_colors, target_colors)
+        # Compute delta E pairwise: each canvas cell vs its corresponding target.
+        # get_deltas_e(A, B) returns array of distances: A[i] vs B[i] for all i.
+        delta_e_values = get_deltas_e(canvas_colors, target_colors)
 
-        # Extract diagonal (each cell vs its own target)
+        # Assign to cells
         idx = 0
         for y in range(canvas.height):
             for x in range(canvas.width):
-                canvas.cells[y][x].delta_e = float(delta_e_matrix[idx, idx])
+                canvas.cells[y][x].delta_e = float(delta_e_values[idx])
                 idx += 1
 
     def _compute_delta_e_for_cell(self, x: int, y: int) -> float:

@@ -18,6 +18,8 @@ __pycache__
 
 # Test output
 tests/images/output
+tests/images/local
+tests/local/
 
 # Secrets
 .env
