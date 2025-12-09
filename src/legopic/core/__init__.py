@@ -11,10 +11,15 @@ Internal Functions (exposed for advanced use):
     load_image: Load images from files or URLs.
     downsize: Reduce image to canvas dimensions.
     match_color: Match colors to nearest palette colors.
+
+Export Functions:
+    export_bricklink_xml: Export BOM to BrickLink XML format.
+    export_rebrickable_csv: Export BOM to Rebrickable CSV format.
 """
 
 from .config import ConvertConfig
 from .downsize import downsize
+from .export import export_bricklink_xml, export_rebrickable_csv
 from .loader import load_image
 from .match_color import match_color
 from .session import ConversionSession
@@ -25,4 +30,6 @@ __all__ = [
     "load_image",
     "downsize",
     "match_color",
+    "export_bricklink_xml",
+    "export_rebrickable_csv",
 ]

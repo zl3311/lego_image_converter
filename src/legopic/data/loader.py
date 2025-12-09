@@ -67,7 +67,9 @@ def _load_colors_raw() -> dict[int, ColorRawData]:
                 "r": int,
                 "g": int,
                 "b": int,
-                "is_standard": bool
+                "is_standard": bool,
+                "bl_id": int,
+                "rb_id": int
             }
         }
 
@@ -89,6 +91,8 @@ def _load_colors_raw() -> dict[int, ColorRawData]:
                 "g": int(row["g"]),
                 "b": int(row["b"]),
                 "is_standard": row["is_standard"].lower() == "true",
+                "bl_id": int(row["bl_id"]),
+                "rb_id": int(row["rb_id"]),
             }
 
     return colors
@@ -366,3 +370,55 @@ def list_available_sets() -> list[tuple[int, str]]:
     """
     sets_raw = _load_sets_raw()
     return sorted((sid, data["name"]) for sid, data in sets_raw.items())
+
+
+@functools.cache
+def _build_color_id_map() -> dict[str, dict[str, int]]:
+    """Build a mapping from color name to external platform IDs.
+
+    Returns:
+        Dict mapping color_name to {"bl_id": int, "rb_id": int, "design_id": int}.
+        Each color name appears once (deduplicated from multiple element variants).
+
+    Note:
+        Results are cached after first call.
+    """
+    colors_raw = _load_colors_raw()
+    color_map: dict[str, dict[str, int]] = {}
+
+    for color_data in colors_raw.values():
+        name = color_data["name"]
+        if name not in color_map:
+            color_map[name] = {
+                "bl_id": color_data["bl_id"],
+                "rb_id": color_data["rb_id"],
+                "design_id": color_data["design_id"],
+            }
+
+    return color_map
+
+
+def get_color_external_ids(color_name: str) -> dict[str, int]:
+    """Get external platform IDs for a color by name.
+
+    Args:
+        color_name (str): The color name (e.g., "Black", "Trans-Clear").
+
+    Returns:
+        dict[str, int]: Dict with keys "bl_id" (BrickLink color ID),
+            "rb_id" (Rebrickable color ID), and "design_id" (LEGO design ID).
+
+    Raises:
+        ValueError: If the color name is not found.
+
+    Example:
+        >>> ids = get_color_external_ids("Black")
+        >>> print(f"BrickLink: {ids['bl_id']}, Rebrickable: {ids['rb_id']}")
+    """
+    color_map = _build_color_id_map()
+
+    if color_name not in color_map:
+        available = sorted(color_map.keys())
+        raise ValueError(f"Color '{color_name}' not found. Available: {available[:5]}...")
+
+    return color_map[color_name].copy()

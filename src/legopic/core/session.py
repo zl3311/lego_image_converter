@@ -558,6 +558,50 @@ class ConversionSession:
             [canvas.cells[y][x].delta_e for x in range(canvas.width)] for y in range(canvas.height)
         ]
 
+    def export_bricklink_xml(self) -> str:
+        """Export canvas BOM to BrickLink XML wanted list format.
+
+        Returns a string containing BrickLink-compatible XML that can be
+        uploaded directly to BrickLink.com as a wanted list.
+
+        Returns:
+            str: XML string for BrickLink wanted list upload.
+
+        Raises:
+            RuntimeError: If convert() has not been called yet.
+
+        Example:
+            >>> xml = session.export_bricklink_xml()
+            >>> with open("wanted_list.xml", "w") as f:
+            ...     f.write(xml)
+        """
+        from .export import export_bricklink_xml
+
+        bom = self.get_bill_of_materials()
+        return export_bricklink_xml(bom)
+
+    def export_rebrickable_csv(self) -> str:
+        """Export canvas BOM to Rebrickable CSV format.
+
+        Returns a string containing Rebrickable-compatible CSV that can be
+        imported to Rebrickable.com as a parts list.
+
+        Returns:
+            str: CSV string for Rebrickable parts list import.
+
+        Raises:
+            RuntimeError: If convert() has not been called yet.
+
+        Example:
+            >>> csv = session.export_rebrickable_csv()
+            >>> with open("parts_list.csv", "w") as f:
+            ...     f.write(csv)
+        """
+        from .export import export_rebrickable_csv
+
+        bom = self.get_bill_of_materials()
+        return export_rebrickable_csv(bom)
+
     def __repr__(self) -> str:
         """Return string representation of the session."""
         status = "converted" if self._canvas else "not converted"
