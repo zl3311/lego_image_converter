@@ -13,6 +13,21 @@ Convert images to LEGO mosaic patterns with perceptual color matching.
 
 ---
 
+## ✨ New: Dithering Support
+
+Create photo-realistic LEGO mosaics with **Floyd-Steinberg dithering** — perfect for portraits and images with smooth gradients!
+
+| Classic | Sharp | Dithered |
+|:-------:|:-----:|:--------:|
+| ![Classic](assets/example_classic.png) | ![Sharp](assets/example_sharp.png) | ![Dithered](assets/example_dithered.png) |
+| Best for: logos, pixel art | Best for: sharp edges | Best for: photos, gradients |
+
+```python
+session.convert("dithered")  # Just one line!
+```
+
+---
+
 ## Installation
 
 ```bash
@@ -24,7 +39,7 @@ pip install legopic
 ### Basic Conversion
 
 ```python
-from legopic import ConversionSession, ConvertConfig, Palette, load_image
+from legopic import ConversionSession, Palette, load_image
 
 # Load image and palette
 image = load_image("photo.jpg")
@@ -32,7 +47,7 @@ palette = Palette.from_set(31197)  # Andy Warhol's Marilyn Monroe set
 
 # Create session and convert
 session = ConversionSession(image, palette, canvas_size=(48, 48))
-session.convert()
+session.convert()  # Uses "classic" profile by default
 
 # Access result
 print(f"Similarity score: {session.similarity_score:.2f}")
@@ -42,6 +57,34 @@ for row in session.canvas.cells:
     for cell in row:
         print(f"({cell.x}, {cell.y}): {cell.color.name}")
 ```
+
+### Pipeline Profiles
+
+Choose a conversion profile based on your image type:
+
+```python
+from legopic import ConversionSession, Palette, load_image
+
+image = load_image("photo.jpg")
+palette = Palette.from_set(31198)  # The Beatles
+
+session = ConversionSession(image, palette, (48, 48))
+
+# Classic: Mean pooling → nearest color match
+session.convert("classic")  # Best for smooth gradients, logos
+
+# Sharp: Match colors first → mode pooling
+session.convert("sharp")  # Best for sharp edges, pixel art
+
+# Dithered: Mean pooling → Floyd-Steinberg dithering
+session.convert("dithered")  # Best for photos, portraits
+```
+
+| Profile | Pipeline | Best For |
+|---------|----------|----------|
+| `"classic"` | Pool (mean) → Quantize | Smooth gradients, logos |
+| `"sharp"` | Quantize → Pool (mode) | Sharp edges, pixel art |
+| `"dithered"` | Pool (mean) → Dither (Floyd-Steinberg) | Photos, portraits, gradients |
 
 ### Using All Standard LEGO Colors
 
@@ -53,7 +96,7 @@ palette = Palette.from_set()  # No set_id = all standard colors
 
 image = load_image("photo.jpg")
 session = ConversionSession(image, palette, (48, 48))
-session.convert()
+session.convert("dithered")  # Great for photos with full color range
 ```
 
 ### Using a Custom Palette
@@ -75,35 +118,17 @@ session = ConversionSession(image, palette, canvas_size=(48, 48))
 session.convert()
 ```
 
-### Different Downsampling Methods
-
-```python
-from legopic import ConversionSession, ConvertConfig, Palette, load_image
-
-image = load_image("photo.jpg")
-palette = Palette.from_set(31198)  # The Beatles
-
-session = ConversionSession(image, palette, (48, 48))
-
-# Use different methods via ConvertConfig
-config = ConvertConfig(method='match_then_mode')  # Best for sharp edges
-session.convert(config)
-
-# Re-convert with different method
-session.reconvert(ConvertConfig(method='mean_then_match'))  # Best for gradients
-```
-
 ### Interactive Editing Workflow
 
 ```python
-from legopic import ConversionSession, ConvertConfig, Palette, Color, load_image
+from legopic import ConversionSession, Palette, Color, load_image
 
 image = load_image("photo.jpg")
 palette = Palette.from_set(31197)
 session = ConversionSession(image, palette, (48, 48))
 
 # Initial conversion
-session.convert(ConvertConfig(method='match_then_mode'))
+session.convert("sharp")
 print(f"Initial similarity: {session.similarity_score:.2f}")
 
 # Pin a cell and change its color
@@ -116,8 +141,8 @@ new_orange = Color((255, 126, 20), "Orange")
 count = session.swap_color(old_red, new_orange)
 print(f"Swapped {count} cells from red to orange")
 
-# Re-convert with a different method, preserving pinned cells
-session.reconvert(ConvertConfig(method='mean_then_match'), keep_pins=True)
+# Re-convert with a different profile, preserving pinned cells
+session.reconvert("classic", keep_pins=True)
 
 # Get pinned cells
 pinned = session.get_pinned_cells()
@@ -127,7 +152,7 @@ print(f"Pinned cells: {pinned}")
 ### Inventory-Limited Conversion
 
 ```python
-from legopic import ConversionSession, ConvertConfig, Palette, load_image
+from legopic import ConversionSession, Palette, load_image
 
 image = load_image("photo.jpg")
 palette = Palette.from_set(31197)  # Has specific element counts
@@ -135,13 +160,52 @@ palette = Palette.from_set(31197)  # Has specific element counts
 session = ConversionSession(image, palette, (48, 48))
 
 # Enable inventory limits - cells fall back to next-best color when preferred runs out
-config = ConvertConfig(
-    method='match_then_mode',
+session.convert(
+    pipeline="sharp",
     limit_inventory=True,
-    algorithm='priority_greedy'  # Fast heuristic
+    algorithm="priority_greedy",  # Fast heuristic
 )
-session.convert(config)
 ```
+
+### Custom Pipeline
+
+For advanced users, create custom pipelines with fine-grained control:
+
+```python
+from legopic import ConversionSession, Palette, load_image
+from legopic.pipeline import (
+    Pipeline,
+    PoolStep, PoolConfig, PoolMethod, ColorSpace,
+    DitherStep, DitherConfig, DitherAlgorithm, ScanOrder,
+)
+
+image = load_image("photo.jpg")
+palette = Palette.from_set(31197)
+
+# Create a custom pipeline: LAB color space pooling + Atkinson dithering
+custom_pipeline = Pipeline([
+    PoolStep(PoolConfig(
+        method=PoolMethod.MEAN,
+        color_space=ColorSpace.LAB,  # Perceptually uniform averaging
+    )),
+    DitherStep(DitherConfig(
+        algorithm=DitherAlgorithm.ATKINSON,  # Lighter, high-contrast
+        order=ScanOrder.SERPENTINE,
+        strength=0.8,  # 80% error diffusion
+    )),
+])
+
+session = ConversionSession(image, palette, (48, 48))
+session.convert(custom_pipeline)
+```
+
+**Available dithering algorithms:**
+- `FLOYD_STEINBERG` — Classic, balanced (default)
+- `ATKINSON` — Lighter, high-contrast
+- `JARVIS_JUDICE_NINKE` — Smoother gradients
+- `STUCKI` — High quality
+- `SIERRA` / `SIERRA_LITE` — Sierra variants
+- `BAYER` — Ordered dithering (parallelizable)
 
 ### Exporting for Building Guide
 
@@ -226,13 +290,26 @@ for set_id, name in list_available_sets():
 
 Uses the Delta E (CIE2000) perceptual color distance metric via `basic_colormath`, which accounts for non-linearities in human vision perception.
 
-### Downsampling Methods
+### Pipeline Profiles
 
-| Method | Description | Best For |
-|--------|-------------|----------|
-| `mean_then_match` | Average pixel colors, then match to palette | Smooth gradients |
-| `match_then_mean` | Match each pixel, then average results | Balanced approach |
-| `match_then_mode` | Match each pixel, take most common (default) | Sharp edges, distinct colors |
+| Profile | Description | Best For |
+|---------|-------------|----------|
+| `"classic"` | Average pixel colors, then match to palette | Smooth gradients |
+| `"sharp"` | Match each pixel, take most common | Sharp edges, distinct colors |
+| `"dithered"` | Average pixels, then apply error diffusion | Photos, portraits, gradients |
+
+### Dithering Algorithms
+
+Error diffusion dithering creates the illusion of more colors by strategically placing available colors:
+
+| Algorithm | Description |
+|-----------|-------------|
+| Floyd-Steinberg | Classic, balanced error diffusion |
+| Atkinson | Lighter, high-contrast (loses 25% error intentionally) |
+| Jarvis-Judice-Ninke | Smoother gradients (larger kernel) |
+| Stucki | High quality, similar to Jarvis |
+| Sierra / Sierra Lite | Fast approximations |
+| Bayer | Ordered dithering (not error diffusion, parallelizable) |
 
 ### Dimension Validation
 
@@ -298,7 +375,17 @@ See the [Contributing](#contributing-new-colors-or-sets) section for validation 
 | Class | Description |
 |-------|-------------|
 | `ConversionSession(image, palette, canvas_size)` | Main workflow manager for conversion |
-| `ConvertConfig(method, limit_inventory, algorithm)` | Soft parameters for conversion |
+
+### Pipeline
+
+| Class/Function | Description |
+|----------------|-------------|
+| `Pipeline(steps, name=None)` | Custom pipeline with ordered steps |
+| `PoolStep(config)` | Spatial downsampling step |
+| `QuantizeStep(config)` | Color quantization (nearest match) |
+| `DitherStep(config)` | Error diffusion dithering |
+| `get_profile(name)` | Get built-in profile by name |
+| `list_profiles()` | List available profile names |
 
 ### Models
 
@@ -317,8 +404,8 @@ See the [Contributing](#contributing-new-colors-or-sets) section for validation 
 
 | Method | Description |
 |--------|-------------|
-| `convert(config=None)` | Run initial conversion |
-| `reconvert(config=None, keep_pins=True)` | Re-convert preserving pinned cells |
+| `convert(pipeline="classic", limit_inventory=False, algorithm="priority_greedy")` | Run initial conversion |
+| `reconvert(pipeline=None, keep_pins=True)` | Re-convert preserving pinned cells |
 | `pin(x, y, new_color=None)` | Pin a cell, optionally changing its color |
 | `unpin(x, y)` | Unpin a cell |
 | `swap_color(old, new, pin=True)` | Bulk swap all cells of one color |
@@ -337,7 +424,6 @@ See the [Contributing](#contributing-new-colors-or-sets) section for validation 
 | `palette` | Available colors (read-only) |
 | `canvas_size` | Target dimensions (read-only) |
 | `canvas` | Current conversion result |
-| `config` | Current configuration |
 | `similarity_score` | Average Delta E across all cells |
 
 ### Palette Methods
@@ -362,7 +448,6 @@ See the [Contributing](#contributing-new-colors-or-sets) section for validation 
 | Function | Description |
 |----------|-------------|
 | `load_image(source)` | Load from file path or URL |
-| `downsize(image, palette, width, height, method)` | Low-level resize with color matching |
 | `match_color(targets, palette)` | Raw color matching utility |
 | `export_bricklink_xml(bom)` | Export BOM list to BrickLink XML format |
 | `export_rebrickable_csv(bom)` | Export BOM list to Rebrickable CSV format |
@@ -457,12 +542,17 @@ Originally created for [LEGO Art Project 21226](https://www.lego.com/en-us/produ
 1. **Converting any image** to the constrained color palette of available LEGO tiles
 2. **Downsizing intelligently** to your target canvas dimensions (e.g., 48×48 studs)
 3. **Using perceptually accurate color matching** via the CIEDE2000 algorithm
+4. **Dithering for photo-realism** using error diffusion algorithms
 
 Whether you're recreating a family photo, a pet portrait, or pixel art, `legopic` lets you preview exactly how your design will look before ordering hundreds of tiles. No more guesswork — just load an image, pick a palette, and see the result instantly.
 
 ### Why Perceptual Color Matching?
 
 Simple RGB distance doesn't account for how humans actually perceive color. Two colors might be mathematically similar but look completely different to our eyes. `legopic` uses the **Delta E (CIE2000)** metric, which models human vision to find the closest *perceptual* match — resulting in mosaics that look right, not just mathematically correct.
+
+### Why Dithering?
+
+With a limited palette (often just 10-15 colors), smooth gradients can look blocky. **Dithering** strategically places available colors to create the *illusion* of intermediate tones — the same technique used in classic video games and print media. The result? More detailed, photo-realistic mosaics from the same set of tiles.
 
 ## License
 

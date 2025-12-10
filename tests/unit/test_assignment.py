@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from legopic import Color, ConversionSession, ConvertConfig, Image, Palette
+from legopic import Color, ConversionSession, Image, Palette
 from legopic.core.assignment import AssignmentResult, priority_greedy
 from legopic.models import Element
 
@@ -142,8 +142,7 @@ class TestInventoryLimitedSession:
     def test_unlimited_uses_best_match(self, test_image, limited_palette):
         """Without limit_inventory, all cells get best match."""
         session = ConversionSession(test_image, limited_palette, (10, 10))
-        config = ConvertConfig(limit_inventory=False)
-        session.convert(config)
+        session.convert(limit_inventory=False)
 
         # All cells should be red (best match for red image)
         canvas = session.canvas
@@ -154,8 +153,7 @@ class TestInventoryLimitedSession:
     def test_limited_respects_inventory(self, test_image, limited_palette):
         """With limit_inventory, falls back when inventory exhausted."""
         session = ConversionSession(test_image, limited_palette, (10, 10))
-        config = ConvertConfig(limit_inventory=True)
-        session.convert(config)
+        session.convert(limit_inventory=True)
 
         # Count colors used
         canvas = session.canvas
@@ -177,14 +175,14 @@ class TestInventoryLimitedSession:
     def test_pinned_cells_preserved_with_inventory(self, test_image, limited_palette):
         """Pinned cells survive reconvert with inventory limits."""
         session = ConversionSession(test_image, limited_palette, (10, 10))
-        session.convert(ConvertConfig(limit_inventory=True))
+        session.convert(limit_inventory=True)
 
         # Pin a cell to blue
         blue = Color((0, 0, 255), name="Blue")
         session.pin(0, 0, blue)
 
         # Reconvert
-        session.reconvert(ConvertConfig(limit_inventory=True), keep_pins=True)
+        session.reconvert(limit_inventory=True, keep_pins=True)
 
         # Pinned cell should still be blue
         assert session.canvas.cells[0][0].color.rgb == (0, 0, 255)
@@ -193,7 +191,7 @@ class TestInventoryLimitedSession:
     def test_bom_reflects_limited_usage(self, test_image, limited_palette):
         """Bill of materials shows actual usage with inventory limits."""
         session = ConversionSession(test_image, limited_palette, (10, 10))
-        session.convert(ConvertConfig(limit_inventory=True))
+        session.convert(limit_inventory=True)
 
         bom = session.get_bill_of_materials()
 

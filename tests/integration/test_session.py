@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from legopic import Canvas, Color, ConversionSession, ConvertConfig, Image, Palette
+from legopic import Canvas, Color, ConversionSession, Image, Palette
 
 
 class TestConversionSession:
@@ -71,12 +71,11 @@ class TestConversionSession:
         assert array.shape == (10, 10, 3)
         assert array.dtype == np.uint8
 
-    def test_all_methods_produce_valid_output(self, test_image, test_palette):
-        """All downsize methods produce valid Canvas objects."""
-        for method in ["mean_then_match", "match_then_mean", "match_then_mode"]:
+    def test_all_profiles_produce_valid_output(self, test_image, test_palette):
+        """All pipeline profiles produce valid Canvas objects."""
+        for profile in ["classic", "sharp", "dithered"]:
             session = ConversionSession(test_image, test_palette, (10, 10))
-            config = ConvertConfig(method=method)
-            canvas = session.convert(config)
+            canvas = session.convert(profile)
 
             assert isinstance(canvas, Canvas)
             assert canvas.width == 10
@@ -106,8 +105,8 @@ class TestConversionSession:
         white = Color((255, 255, 255), name="White")
         session.pin(0, 0, white)
 
-        # Reconvert with different method
-        session.reconvert(ConvertConfig(method="mean_then_match"), keep_pins=True)
+        # Reconvert with different profile
+        session.reconvert("classic", keep_pins=True)
 
         # Pinned cell should still be white
         assert session.canvas.get_cell(0, 0).color.rgb == (255, 255, 255)
@@ -227,3 +226,58 @@ class TestConversionSession:
 
         with pytest.raises(RuntimeError, match="No conversion yet"):
             session.export_rebrickable_csv()
+
+
+class TestPipelineProfiles:
+    """Tests for pipeline profile usage."""
+
+    @pytest.fixture
+    def test_palette(self):
+        """A test palette with basic colors."""
+        return Palette(
+            [
+                Color((255, 0, 0), name="Red"),
+                Color((0, 255, 0), name="Green"),
+                Color((0, 0, 255), name="Blue"),
+                Color((0, 0, 0), name="Black"),
+                Color((255, 255, 255), name="White"),
+            ]
+        )
+
+    @pytest.fixture
+    def test_image(self):
+        """A 100x100 test image."""
+        array = np.zeros((100, 100, 3), dtype=np.uint8)
+        array[:, :, 0] = 255  # All red
+        return Image(array)
+
+    def test_invalid_profile_raises(self, test_image, test_palette):
+        """Invalid profile name raises ValueError."""
+        session = ConversionSession(test_image, test_palette, (10, 10))
+
+        with pytest.raises(ValueError, match="Unknown profile"):
+            session.convert("nonexistent_profile")
+
+    def test_custom_pipeline(self, test_image, test_palette):
+        """Custom pipeline can be passed to convert()."""
+        from legopic.pipeline import (
+            DitherConfig,
+            DitherStep,
+            Pipeline,
+            PoolConfig,
+            PoolStep,
+        )
+
+        custom_pipeline = Pipeline(
+            [
+                PoolStep(PoolConfig()),
+                DitherStep(DitherConfig()),
+            ]
+        )
+
+        session = ConversionSession(test_image, test_palette, (10, 10))
+        canvas = session.convert(custom_pipeline)
+
+        assert isinstance(canvas, Canvas)
+        assert canvas.width == 10
+        assert canvas.height == 10

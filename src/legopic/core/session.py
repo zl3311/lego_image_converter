@@ -6,9 +6,9 @@ re-conversion with preserved pins, color adjustments, and data exports.
 
 Typical Workflow:
     1. Create session with hard params (image, palette, canvas_size).
-    2. Call convert() with soft params (method, limit_inventory, etc.).
+    2. Call convert() with pipeline (string profile name or Pipeline object).
     3. Adjust: pin cells, swap colors.
-    4. Optionally reconvert() with different soft params.
+    4. Optionally reconvert() with different pipeline, keep pins.
     5. Export: get_bill_of_materials(), get_grid_data(), etc.
 """
 
@@ -21,8 +21,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 from ..models import BOMEntry, Canvas, CellData, Color, Image, Palette
-from .config import ConvertConfig
-from .downsize import _get_block_pixels, _validate_dimensions
+from ..pipeline import IndexMap, Pipeline, PipelineContext, RGBImage, get_profile
 
 
 class ConversionSession:
@@ -32,15 +31,15 @@ class ConversionSession:
     It handles conversion, re-conversion with preserved pins, and exports.
 
     The session separates "hard" parameters (set at init, immutable) from
-    "soft" parameters (in ConvertConfig, can change between reconversions).
+    "soft" parameters (in convert/reconvert calls, can change).
 
     Hard parameters (immutable after init):
         - image: Source image
         - palette: Available colors/elements
         - canvas_size: Output dimensions in studs
 
-    Soft parameters (in ConvertConfig):
-        - method: Downsampling algorithm
+    Soft parameters (in convert/reconvert):
+        - pipeline: Processing pipeline (profile name or Pipeline object)
         - limit_inventory: Whether to respect element counts
         - algorithm: Assignment algorithm for inventory-limited mode
 
@@ -49,28 +48,36 @@ class ConversionSession:
         palette: Available colors and elements (read-only).
         canvas_size: Target (width, height) in studs (read-only).
         canvas: Current conversion result (updated by convert/reconvert).
-        config: Current conversion configuration.
+        pipeline: Current pipeline configuration.
         similarity_score: Aggregate Delta E across all cells.
 
     Example:
-        >>> from legopic import ConversionSession, ConvertConfig, Palette, load_image
+        >>> from legopic import ConversionSession, Palette, load_image
         >>>
         >>> # Setup (hard params)
         >>> image = load_image("photo.jpg")
         >>> palette = Palette.from_set(31197)
         >>> session = ConversionSession(image, palette, (48, 48))
         >>>
-        >>> # Convert (soft params)
-        >>> config = ConvertConfig(method='match_then_mode', limit_inventory=True)
-        >>> session.convert(config)
+        >>> # Convert with built-in profile
+        >>> session.convert("dithered")
         >>> print(f"Similarity: {session.similarity_score:.2f}")
+        >>>
+        >>> # Or use custom pipeline
+        >>> from legopic.pipeline import Pipeline, PoolStep, DitherStep, PoolConfig, DitherConfig
+        >>> custom = Pipeline([
+        ...     PoolStep(PoolConfig(output_size=(96, 96))),
+        ...     DitherStep(),
+        ...     PoolStep(PoolConfig()),
+        ... ])
+        >>> session.convert(custom)
         >>>
         >>> # Adjust
         >>> session.pin(3, 5, some_blue_color)
         >>> session.swap_color(old_red, new_orange)
         >>>
-        >>> # Re-convert with different method, keep pins
-        >>> session.reconvert(ConvertConfig(method='mean_then_match'), keep_pins=True)
+        >>> # Re-convert with different profile, keep pins
+        >>> session.reconvert("classic", keep_pins=True)
         >>>
         >>> # Export for building guide
         >>> bom = session.get_bill_of_materials()
@@ -94,7 +101,9 @@ class ConversionSession:
         self._canvas_size = canvas_size
 
         self._canvas: Canvas | None = None
-        self._config: ConvertConfig | None = None
+        self._pipeline: Pipeline | None = None
+        self._limit_inventory: bool = False
+        self._algorithm: str = "priority_greedy"
         self._pinned_index: set[tuple[int, int]] = set()
 
         # Validate dimensions and pre-compute target colors
@@ -128,9 +137,9 @@ class ConversionSession:
         return self._canvas
 
     @property
-    def config(self) -> ConvertConfig | None:
-        """Current conversion configuration, or None if not yet converted."""
-        return self._config
+    def pipeline(self) -> Pipeline | None:
+        """Current pipeline configuration, or None if not yet converted."""
+        return self._pipeline
 
     @property
     def similarity_score(self) -> float:
@@ -159,30 +168,113 @@ class ConversionSession:
                 colors per cell.
         """
         width, height = self._canvas_size
-        stride = _validate_dimensions(self._image, width, height)
+        stride = self._validate_dimensions_internal(self._image, width, height)
         image_array = self._image.to_array()
 
         target_colors = np.zeros((height, width, 3), dtype=np.uint8)
         for cy in range(height):
             for cx in range(width):
-                block_pixels = _get_block_pixels(image_array, cx, cy, stride)
+                block_pixels = self._get_block_pixels(image_array, cx, cy, stride)
                 target_colors[cy, cx] = np.mean(block_pixels, axis=0).astype(np.uint8)
 
         return target_colors
 
-    def convert(self, config: ConvertConfig | None = None) -> Canvas:
+    def _validate_dimensions_internal(
+        self, image: Image, canvas_width: int, canvas_height: int
+    ) -> int:
+        """Validate image and canvas dimensions are compatible.
+
+        Args:
+            image: Source image.
+            canvas_width: Target canvas width.
+            canvas_height: Target canvas height.
+
+        Returns:
+            The computed uniform stride value.
+
+        Raises:
+            ValueError: If dimensions are incompatible for uniform stride.
+        """
+        if canvas_width <= 0 or canvas_height <= 0:
+            raise ValueError(
+                f"Canvas dimensions must be positive. "
+                f"Got width={canvas_width}, height={canvas_height}."
+            )
+
+        if image.width < canvas_width or image.height < canvas_height:
+            raise ValueError(
+                f"Image ({image.width}×{image.height}) must be at least as large as "
+                f"canvas ({canvas_width}×{canvas_height})."
+            )
+
+        stride_w = image.width // canvas_width
+        stride_h = image.height // canvas_height
+
+        if stride_w != stride_h:
+            raise ValueError(
+                f"Incompatible dimensions for uniform stride downsampling. "
+                f"Image ({image.width}×{image.height}) with canvas "
+                f"({canvas_width}×{canvas_height}) requires stride {stride_w} "
+                f"for width but stride {stride_h} for height."
+            )
+
+        return int(stride_w)
+
+    def _get_block_pixels(
+        self, image_array: "NDArray[np.uint8]", canvas_x: int, canvas_y: int, stride: int
+    ) -> "NDArray[np.uint8]":
+        """Extract pixels from a block region of the image.
+
+        Args:
+            image_array: Source image array (height, width, 3).
+            canvas_x: X-coordinate of the canvas cell.
+            canvas_y: Y-coordinate of the canvas cell.
+            stride: Base block size.
+
+        Returns:
+            Array of shape (n_pixels, 3) containing RGB values.
+        """
+        y_start = canvas_y * stride
+        y_end = min((canvas_y + 1) * stride, image_array.shape[0])
+        x_start = canvas_x * stride
+        x_end = min((canvas_x + 1) * stride, image_array.shape[1])
+
+        block = image_array[y_start:y_end, x_start:x_end, :]
+        return block.reshape(-1, 3)
+
+    def convert(
+        self,
+        pipeline: Pipeline | str = "classic",
+        limit_inventory: bool = False,
+        algorithm: str = "priority_greedy",
+    ) -> Canvas:
         """Run initial conversion.
 
         This clears any existing pins and runs a fresh conversion.
 
         Args:
-            config (ConvertConfig | None): Conversion configuration. Uses
-                defaults if None.
+            pipeline (Pipeline | str): Pipeline configuration or profile name.
+                Built-in profiles: "classic", "sharp", "dithered"
+            limit_inventory (bool): If True, respect palette element counts.
+                Colors that run out fall back to next best match.
+            algorithm (str): Assignment algorithm for inventory-limited mode.
+                "priority_greedy" or "optimal".
 
         Returns:
             Canvas: The converted Canvas.
+
+        Raises:
+            ValueError: If profile name is not found.
+            TypeError: If pipeline types are invalid.
+            ValueError: If dimensions are incompatible.
         """
-        self._config = config or ConvertConfig()
+        # Resolve profile name to Pipeline
+        if isinstance(pipeline, str):
+            pipeline = get_profile(pipeline)
+
+        self._pipeline = pipeline
+        self._limit_inventory = limit_inventory
+        self._algorithm = algorithm
         self._pinned_index.clear()
 
         self._canvas = self._run_conversion(pinned_cells=None)
@@ -190,17 +282,27 @@ class ConversionSession:
 
         return self._canvas
 
-    def reconvert(self, config: ConvertConfig | None = None, keep_pins: bool = True) -> Canvas:
+    def reconvert(
+        self,
+        pipeline: Pipeline | str | None = None,
+        keep_pins: bool = True,
+        limit_inventory: bool | None = None,
+        algorithm: str | None = None,
+    ) -> Canvas:
         """Re-run conversion, optionally preserving pinned cells.
 
         Pinned cells are treated as fixed constraints: their colors are
         reserved from inventory before running the assignment algorithm.
 
         Args:
-            config (ConvertConfig | None): New configuration. If None, uses
-                current config.
+            pipeline (Pipeline | str | None): New pipeline configuration.
+                If None, uses current pipeline.
             keep_pins (bool): If True, pinned cells preserve their colors and
                 are treated as constraints during assignment.
+            limit_inventory (bool | None): Override inventory limit setting.
+                If None, uses current setting.
+            algorithm (str | None): Override algorithm setting.
+                If None, uses current setting.
 
         Returns:
             Canvas: The newly converted Canvas.
@@ -211,8 +313,17 @@ class ConversionSession:
         if self._canvas is None:
             raise RuntimeError("No initial conversion. Call convert() first.")
 
-        if config is not None:
-            self._config = config
+        # Update settings if provided
+        if pipeline is not None:
+            if isinstance(pipeline, str):
+                pipeline = get_profile(pipeline)
+            self._pipeline = pipeline
+
+        if limit_inventory is not None:
+            self._limit_inventory = limit_inventory
+
+        if algorithm is not None:
+            self._algorithm = algorithm
 
         pinned_cells = None
         if keep_pins and self._pinned_index:
@@ -233,7 +344,7 @@ class ConversionSession:
     def _run_conversion(self, pinned_cells: dict[tuple[int, int], Color] | None) -> Canvas:
         """Run the conversion algorithm.
 
-        Routes to either unlimited conversion (standard downsize) or
+        Routes to either unlimited conversion (pipeline) or
         inventory-limited conversion (assignment algorithms).
 
         Args:
@@ -243,8 +354,7 @@ class ConversionSession:
         Returns:
             Canvas: Converted Canvas.
         """
-        assert self._config is not None
-        if self._config.limit_inventory:
+        if self._limit_inventory:
             return self._run_inventory_limited_conversion(pinned_cells)
         return self._run_unlimited_conversion(pinned_cells)
 
@@ -253,8 +363,8 @@ class ConversionSession:
     ) -> Canvas:
         """Run conversion without inventory limits.
 
-        Uses the standard downsize algorithm that picks the best matching
-        color for each cell regardless of inventory.
+        Uses the pipeline to process the image, then converts
+        the resulting IndexMap to a Canvas.
 
         Args:
             pinned_cells: Dict of (x, y) -> Color for cells to preserve,
@@ -263,17 +373,52 @@ class ConversionSession:
         Returns:
             Canvas: Converted Canvas.
         """
-        from .downsize import downsize
+        assert self._pipeline is not None
 
-        assert self._config is not None
-        width, height = self._canvas_size
-        canvas = downsize(self._image, self._palette, width, height, method=self._config.method)
+        # Build pipeline context
+        context = PipelineContext(
+            palette=self._palette,
+            target_size=self._canvas_size,
+            original_image=RGBImage(self._image.to_array()),
+        )
+
+        # Run pipeline
+        rgb_image = RGBImage(self._image.to_array())
+        index_map = self._pipeline.run(rgb_image, context)
+
+        # Convert IndexMap to Canvas
+        canvas = self._index_map_to_canvas(index_map)
 
         # Apply pinned cells (overwrite algorithm's choices)
         if pinned_cells:
             for (x, y), color in pinned_cells.items():
                 canvas.cells[y][x].color = color
                 canvas.cells[y][x].pinned = True
+
+        return canvas
+
+    def _index_map_to_canvas(self, index_map: "IndexMap") -> Canvas:
+        """Convert IndexMap to Canvas with Cell objects.
+
+        Args:
+            index_map: IndexMap from pipeline output.
+
+        Returns:
+            Canvas with colors from index_map.
+        """
+        from ..pipeline import IndexMap
+
+        if not isinstance(index_map, IndexMap):
+            raise TypeError(f"Expected IndexMap, got {type(index_map).__name__}")
+
+        width, height = self._canvas_size
+        canvas = Canvas(width, height)
+        palette_colors = self._palette.colors
+
+        for y in range(height):
+            for x in range(width):
+                idx = int(index_map.data[y, x])
+                canvas.set_cell(x, y, palette_colors[idx])
 
         return canvas
 
@@ -295,9 +440,8 @@ class ConversionSession:
         """
         from .assignment import optimal, priority_greedy
 
-        assert self._config is not None
         width, height = self._canvas_size
-        assign_func = optimal if self._config.algorithm == "optimal" else priority_greedy
+        assign_func = optimal if self._algorithm == "optimal" else priority_greedy
         result = assign_func(
             target_colors=self._target_colors,
             palette=self._palette,
@@ -599,7 +743,9 @@ class ConversionSession:
         """Return string representation of the session."""
         status = "converted" if self._canvas else "not converted"
         pins = len(self._pinned_index)
+        pipeline_name = self._pipeline.name if self._pipeline and self._pipeline.name else "custom"
         return (
             f"ConversionSession(canvas_size={self._canvas_size}, "
-            f"palette={len(self._palette)} colors, status={status}, pins={pins})"
+            f"palette={len(self._palette)} colors, status={status}, "
+            f"pipeline={pipeline_name}, pins={pins})"
         )

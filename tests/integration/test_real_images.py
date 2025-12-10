@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from legopic import Canvas, Color, ConversionSession, ConvertConfig, Image, Palette
+from legopic import Canvas, Color, ConversionSession, Image, Palette
 
 # =============================================================================
 # Test Configuration
@@ -101,14 +101,14 @@ class TestConversionSession:
     redundant image loading and conversion operations.
     """
 
-    def test_png_conversion_with_all_methods(self, standard_palette: Palette):
-        """PNG image converts successfully with all downsize methods.
+    def test_png_conversion_with_all_profiles(self, standard_palette: Palette):
+        """PNG image converts successfully with all pipeline profiles.
 
         This single test validates:
         - PNG format loading works
-        - All three downsize methods produce valid canvases
+        - All three profiles produce valid canvases
         - Canvas dimensions are correct
-        - All cells have palette colors (checked on final method)
+        - All cells have palette colors (checked on final profile)
         """
         if PNG_IMAGE is None:
             pytest.skip("No PNG test image available")
@@ -116,10 +116,10 @@ class TestConversionSession:
         image = Image.from_file(str(PNG_IMAGE))
         palette_rgbs = {c.rgb for c in standard_palette.colors}
 
-        for method in ["mean_then_match", "match_then_mean", "match_then_mode"]:
+        for profile in ["classic", "sharp", "dithered"]:
             try:
                 session = ConversionSession(image, standard_palette, CANVAS_SIZE)
-                canvas = session.convert(ConvertConfig(method=method))
+                canvas = session.convert(profile)
             except ValueError as e:
                 if "stride" in str(e).lower() or "incompatible" in str(e).lower():
                     pytest.skip(f"Image dimensions incompatible: {e}")
