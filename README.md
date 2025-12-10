@@ -17,10 +17,10 @@ Convert images to LEGO mosaic patterns with perceptual color matching.
 
 Create photo-realistic LEGO mosaics with **Floyd-Steinberg dithering** — perfect for portraits and images with smooth gradients!
 
-| Classic | Sharp | Dithered |
-|:-------:|:-----:|:--------:|
-| ![Classic](assets/example_classic.png) | ![Sharp](assets/example_sharp.png) | ![Dithered](assets/example_dithered.png) |
-| Best for: logos, pixel art | Best for: sharp edges | Best for: photos, gradients |
+| Original | Classic | Sharp | Dithered |
+|:--------:|:-------:|:-----:|:--------:|
+| ![Original](assets/example_original.png) | ![Classic](assets/example_classic.png) | ![Sharp](assets/example_sharp.png) | ![Dithered](assets/example_dithered.png) |
+| Source image | Best for: logos | Best for: sharp edges | Best for: photos |
 
 ```python
 session.convert("dithered")  # Just one line!
