@@ -1,1 +1,1 @@
-"""Unit tests for legopic package."""
+"""Unit tests for mosaicpic package."""

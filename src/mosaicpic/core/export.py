@@ -1,15 +1,15 @@
 """Export functions for BrickLink and Rebrickable formats.
 
 This module provides functions to export a Bill of Materials (BOM) to formats
-compatible with external LEGO marketplaces and inventory management systems.
+compatible with external tile marketplaces and inventory management systems.
 
 Supported Formats:
     - BrickLink XML: For uploading wanted lists to BrickLink.com
     - Rebrickable CSV: For importing parts lists to Rebrickable.com
 
 Example:
-    >>> from legopic import ConversionSession, Palette, load_image
-    >>> from legopic.core.export import export_bricklink_xml, export_rebrickable_csv
+    >>> from mosaicpic import ConversionSession, Palette, load_image
+    >>> from mosaicpic.core.export import export_bricklink_xml, export_rebrickable_csv
     >>>
     >>> # After conversion...
     >>> bom = session.get_bill_of_materials()

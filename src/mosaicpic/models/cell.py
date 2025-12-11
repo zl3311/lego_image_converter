@@ -12,7 +12,7 @@ class Cell:
 
     Cells are used to represent:
     - Individual pixels in a source Image
-    - Individual Lego studs/blocks in a target Canvas
+    - Individual tiles/blocks in a target Canvas
 
     Attributes:
         color: The Color of this cell.

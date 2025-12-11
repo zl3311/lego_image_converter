@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for legopic tests.
+"""Shared pytest fixtures for mosaicpic tests.
 
 This module provides reusable fixtures for creating test data including
 sample images, palettes, and colors across all test modules.
@@ -9,13 +9,13 @@ Fixtures:
     tiny_red_image: A 10x10 solid red test image.
     tiny_gradient_image: A 10x10 gradient test image.
     compatible_image: A 100x100 random image compatible with 10x10 canvas.
-    lego_art_palette: Palette simulating LEGO Art set colors.
+    mosaic_art_palette: Palette simulating mosaic art set colors.
 """
 
 import numpy as np
 import pytest
 
-from legopic import Color, Image, Palette
+from mosaicpic import Color, Image, Palette
 
 
 @pytest.fixture
@@ -63,8 +63,8 @@ def compatible_image() -> Image:
 
 
 @pytest.fixture
-def lego_art_palette() -> Palette:
-    """Return a palette simulating LEGO Art set colors."""
+def mosaic_art_palette() -> Palette:
+    """Return a palette simulating mosaic art set colors."""
     return Palette(
         [
             Color((0, 0, 0), name="Black"),

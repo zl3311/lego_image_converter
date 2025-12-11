@@ -1,27 +1,27 @@
-"""Element model representing a specific LEGO piece variant.
+"""Element model representing a specific tile piece variant.
 
-An Element is a specific LEGO piece identified by its element_id. Multiple
+An Element is a specific tile piece identified by its element_id. Multiple
 elements can represent the same color (variants), allowing for substitution
 when inventory runs low.
 
 Data Model Relationships:
     - Each Element has a unique element_id
     - Multiple Elements can share the same color name and RGB (variants)
-    - Elements belong to sets via the elements.csv mapping
-    - The design_id identifies the brick shape (98138 = 1x1 round tile)
+    - Elements belong to palettes via the elements.csv mapping
+    - The design_id identifies the tile shape (98138 = 1x1 round tile)
 """
 
 
 class Element:
-    """Represents a specific LEGO element (a color variant with inventory).
+    """Represents a specific tile element (a color variant with inventory).
 
-    Elements are the physical LEGO pieces that can be purchased and used.
+    Elements are the physical tile pieces that can be purchased and used.
     Multiple elements may have the same color (RGB) but different element_ids,
     representing different production runs or variants.
 
     Attributes:
-        element_id: Unique LEGO element identifier (e.g., 6284572).
-        design_id: LEGO design/mold identifier (e.g., 98138 for 1x1 round tile).
+        element_id: Unique element identifier (e.g., 6284572).
+        design_id: Design/mold identifier (e.g., 98138 for 1x1 round tile).
         variant_id: Variant number for colors with multiple elements (1, 2, 3...).
         count: Number of pieces available in inventory. None if not tracking.
 
@@ -36,8 +36,8 @@ class Element:
         """Initialize an Element with its identifiers.
 
         Args:
-            element_id (int): Unique LEGO element identifier.
-            design_id (int): LEGO design/mold identifier.
+            element_id (int): Unique element identifier.
+            design_id (int): Design/mold identifier.
             variant_id (int): Variant number (1-indexed).
             count (int | None): Optional inventory count. None means not
                 tracking inventory.

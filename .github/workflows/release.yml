@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/legopic
+      url: https://pypi.org/p/mosaicpic
     permissions:
       id-token: write  # OIDC publishing
     

@@ -4,8 +4,8 @@ This module provides plotting and rendering functions for visualizing images
 and canvases during test development and debugging. Not part of the public API.
 
 Rendering Functions:
-    render_canvas_png: Render canvas as PNG with LEGO-style round tiles.
-    render_canvas_svg: Render canvas as SVG with LEGO-style round tiles.
+    render_canvas_png: Render canvas as PNG with round tile style.
+    render_canvas_svg: Render canvas as SVG with round tile style.
     save_canvas_png: Render and save a Canvas as PNG.
     save_canvas_svg: Render and save a Canvas as SVG.
 
@@ -21,14 +21,14 @@ from PIL import Image as PILImage
 from PIL import ImageDraw
 
 if TYPE_CHECKING:
-    from legopic import Canvas, Color, Image
+    from mosaicpic import Canvas, Color, Image
 
 
 # =============================================================================
-# LEGO-Style Rendering Functions (PNG and SVG)
+# Tile-Style Rendering Functions (PNG and SVG)
 # =============================================================================
 
-# Default proportions (visible gap like real LEGO)
+# Default proportions (visible gap for round tiles)
 DEFAULT_TILE_RATIO = 0.85  # Tile diameter as ratio of cell size
 DEFAULT_OUTLINE_RATIO = 0.025  # Outline width as ratio of tile diameter
 
@@ -42,9 +42,9 @@ def render_canvas_png(
     outline_color: Optional["Color"] = None,
     outline_ratio: float = DEFAULT_OUTLINE_RATIO,
 ) -> PILImage.Image:
-    """Render a Canvas as a PNG image with LEGO-style round tiles.
+    """Render a Canvas as a PNG image with round tile style.
 
-    Creates a realistic LEGO Art representation with circular tiles on a
+    Creates a mosaic representation with circular tiles on a
     baseplate-style background, with optional stud outlines.
 
     Args:
@@ -54,7 +54,7 @@ def render_canvas_png(
         background_color (Color | None): Color for the baseplate background.
             If None, defaults to black RGB(33, 33, 33).
         tile_ratio (float): Tile diameter as ratio of cell size. Default 0.85
-            (85% tile, 15% gap - visible gap like real LEGO).
+            (85% tile, 15% gap - visible gap for round tiles).
         show_outline (bool): Whether to draw stud outlines on tiles.
             Default True.
         outline_color (Color | None): Color for the stud outline. If None,
@@ -66,13 +66,13 @@ def render_canvas_png(
         PILImage.Image: PIL Image object that can be saved or displayed.
 
     Example:
-        >>> canvas = convert("photo.jpg", Palette.from_set(31197), (48, 48))
+        >>> canvas = convert("photo.jpg", Palette.from_set("marilyn_48x48"), (48, 48))
         >>> img = render_canvas_png(canvas, cell_size=20)
         >>> img.save("output.png")
     """
-    from legopic import Color
+    from mosaicpic import Color
 
-    # Default background: LEGO black
+    # Default background: black
     if background_color is None:
         background_color = Color((33, 33, 33), name="Black")
 
@@ -128,7 +128,7 @@ def render_canvas_svg(
     outline_color: Optional["Color"] = None,
     outline_ratio: float = DEFAULT_OUTLINE_RATIO,
 ) -> str:
-    """Render a Canvas as an SVG string with LEGO-style round tiles.
+    """Render a Canvas as an SVG string with round tile style.
 
     Creates a vector SVG representation with circular tiles on a baseplate
     background. SVG output is scalable and ideal for high-quality prints.
@@ -150,16 +150,16 @@ def render_canvas_svg(
         str: SVG content as a string. Can be saved to a .svg file.
 
     Example:
-        >>> canvas = convert("photo.jpg", Palette.from_set(31197), (48, 48))
+        >>> canvas = convert("photo.jpg", Palette.from_set("marilyn_48x48"), (48, 48))
         >>> svg_content = render_canvas_svg(canvas, cell_size=20)
         >>> with open("output.svg", "w") as f:
         ...     f.write(svg_content)
     """
     import svgwrite
 
-    from legopic import Color
+    from mosaicpic import Color
 
-    # Default background: LEGO black
+    # Default background: black
     if background_color is None:
         background_color = Color((33, 33, 33), name="Black")
 
@@ -328,7 +328,7 @@ def plot_canvas(
     w, h = canvas.width, canvas.height
 
     if stud_style:
-        # Draw as Lego studs (circles)
+        # Draw as round studs (circles)
         ax.set_facecolor("black")
 
         if show_grid:

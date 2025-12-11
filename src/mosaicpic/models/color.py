@@ -25,7 +25,7 @@ class Color:
             rgb (tuple[int, int, int]): Tuple of (red, green, blue) values,
                 each must be in [0, 255]. Accepts Python ints or numpy
                 integer types.
-            name (str | None): Optional name for the color. For Lego colors,
+            name (str | None): Optional name for the color. For tile colors,
                 this is typically provided from the elements data file.
 
         Raises:

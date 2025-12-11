@@ -1,13 +1,13 @@
-# legopic
+# mosaicpic
 
-Convert images to LEGO mosaic patterns with perceptual color matching.
+Convert images to mosaic tile patterns with perceptual color matching.
 
-[![CI](https://github.com/zl3311/lego_image_converter/actions/workflows/ci.yml/badge.svg)](https://github.com/zl3311/lego_image_converter/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/zl3311/lego_image_converter/graph/badge.svg)](https://codecov.io/gh/zl3311/lego_image_converter)
-[![PyPI version](https://img.shields.io/pypi/v/legopic)](https://pypi.org/project/legopic/)
-[![Downloads](https://img.shields.io/pepy/dt/legopic)](https://pepy.tech/project/legopic)
-[![Python](https://img.shields.io/pypi/pyversions/legopic)](https://pypi.org/project/legopic/)
-[![License](https://img.shields.io/github/license/zl3311/lego_image_converter)](https://github.com/zl3311/lego_image_converter/blob/main/LICENSE)
+[![CI](https://github.com/zl3311/mosaicpic/actions/workflows/ci.yml/badge.svg)](https://github.com/zl3311/mosaicpic/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/zl3311/mosaicpic/graph/badge.svg)](https://codecov.io/gh/zl3311/mosaicpic)
+[![PyPI version](https://img.shields.io/pypi/v/mosaicpic)](https://pypi.org/project/mosaicpic/)
+[![Downloads](https://img.shields.io/pepy/dt/mosaicpic)](https://pepy.tech/project/mosaicpic)
+[![Python](https://img.shields.io/pypi/pyversions/mosaicpic)](https://pypi.org/project/mosaicpic/)
+[![License](https://img.shields.io/github/license/zl3311/mosaicpic)](https://github.com/zl3311/mosaicpic/blob/main/LICENSE)
 [![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy-lang.org/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
@@ -34,7 +34,7 @@ session.convert("dithered")  # Photo-realistic detail
 ## Installation
 
 ```bash
-pip install legopic
+pip install mosaicpic
 ```
 
 ## Quick Start
@@ -42,11 +42,11 @@ pip install legopic
 ### Basic Conversion
 
 ```python
-from legopic import ConversionSession, Palette, load_image
+from mosaicpic import ConversionSession, Palette, load_image
 
 # Load image and palette
 image = load_image("photo.jpg")
-palette = Palette.from_set(31197)  # Andy Warhol's Marilyn Monroe set
+palette = Palette.from_set("marilyn_48x48")  # Marilyn Monroe portrait palette
 
 # Create session and convert
 session = ConversionSession(image, palette, canvas_size=(48, 48))
@@ -66,10 +66,10 @@ for row in session.canvas.cells:
 Choose a conversion profile based on your image type:
 
 ```python
-from legopic import ConversionSession, Palette, load_image
+from mosaicpic import ConversionSession, Palette, load_image
 
 image = load_image("photo.jpg")
-palette = Palette.from_set(31198)  # The Beatles
+palette = Palette.from_set("beatles_48x48")  # The Beatles portrait palette
 
 session = ConversionSession(image, palette, (48, 48))
 
@@ -89,12 +89,12 @@ session.convert("dithered")  # Best for photos, portraits
 | `"sharp"` | Quantize → Pool (mode) | Sharp edges, pixel art |
 | `"dithered"` | Pool (mean) → Dither (Floyd-Steinberg) | Photos, portraits, gradients |
 
-### Using All Standard LEGO Colors
+### Using All Standard Colors
 
 ```python
-from legopic import ConversionSession, Palette, load_image
+from mosaicpic import ConversionSession, Palette, load_image
 
-# Load all 41 standard (opaque) LEGO colors
+# Load all 41 standard (opaque) colors
 palette = Palette.from_set()  # No set_id = all standard colors
 
 image = load_image("photo.jpg")
@@ -105,7 +105,7 @@ session.convert("dithered")  # Great for photos with full color range
 ### Using a Custom Palette
 
 ```python
-from legopic import ConversionSession, Palette, Color, load_image
+from mosaicpic import ConversionSession, Palette, Color, load_image
 
 # Create a custom palette
 palette = Palette([
@@ -124,10 +124,10 @@ session.convert()
 ### Interactive Editing Workflow
 
 ```python
-from legopic import ConversionSession, Palette, Color, load_image
+from mosaicpic import ConversionSession, Palette, Color, load_image
 
 image = load_image("photo.jpg")
-palette = Palette.from_set(31197)
+palette = Palette.from_set("marilyn_48x48")
 session = ConversionSession(image, palette, (48, 48))
 
 # Initial conversion
@@ -155,10 +155,10 @@ print(f"Pinned cells: {pinned}")
 ### Inventory-Limited Conversion
 
 ```python
-from legopic import ConversionSession, Palette, load_image
+from mosaicpic import ConversionSession, Palette, load_image
 
 image = load_image("photo.jpg")
-palette = Palette.from_set(31197)  # Has specific element counts
+palette = Palette.from_set("marilyn_48x48")  # Has specific element counts
 
 session = ConversionSession(image, palette, (48, 48))
 
@@ -175,15 +175,15 @@ session.convert(
 For advanced users, create custom pipelines with fine-grained control:
 
 ```python
-from legopic import ConversionSession, Palette, load_image
-from legopic.pipeline import (
+from mosaicpic import ConversionSession, Palette, load_image
+from mosaicpic.pipeline import (
     Pipeline,
     PoolStep, PoolConfig, PoolMethod, ColorSpace,
     DitherStep, DitherConfig, DitherAlgorithm, ScanOrder,
 )
 
 image = load_image("photo.jpg")
-palette = Palette.from_set(31197)
+palette = Palette.from_set("marilyn_48x48")
 
 # Create a custom pipeline: LAB color space pooling + Atkinson dithering
 custom_pipeline = Pipeline([
@@ -213,10 +213,10 @@ session.convert(custom_pipeline)
 ### Exporting for Building Guide
 
 ```python
-from legopic import ConversionSession, Palette, load_image
+from mosaicpic import ConversionSession, Palette, load_image
 
 image = load_image("photo.jpg")
-palette = Palette.from_set(31197)
+palette = Palette.from_set("marilyn_48x48")
 session = ConversionSession(image, palette, (48, 48))
 session.convert()
 
@@ -243,10 +243,10 @@ print(f"Worst color match: ΔE={max_delta_e:.1f}")
 Export your parts list directly to BrickLink or Rebrickable for easy ordering:
 
 ```python
-from legopic import ConversionSession, Palette, load_image
+from mosaicpic import ConversionSession, Palette, load_image
 
 image = load_image("photo.jpg")
-palette = Palette.from_set(31197)
+palette = Palette.from_set("marilyn_48x48")
 session = ConversionSession(image, palette, (48, 48))
 session.convert()
 
@@ -265,23 +265,23 @@ The exports include platform-specific color IDs so you can directly upload to:
 - **[BrickLink](https://www.bricklink.com)** — Upload XML as a Wanted List
 - **[Rebrickable](https://rebrickable.com)** — Import CSV as a Parts List
 
-## Available LEGO Sets
+## Available Palettes
 
-The package includes data for official LEGO Art sets:
+The package includes data for various mosaic palettes:
 
-| Set ID | Name | Canvas Size |
-|--------|------|-------------|
-| 31197 | Andy Warhol's Marilyn Monroe | 48×48 |
-| 31198 | The Beatles | 48×48 |
-| 31202 | Disney's Mickey Mouse | 48×48 |
-| 31203 | World Map | 128×80 |
-| 31204 | Elvis Presley "The King" | 48×48 |
-| 21226 | Art Project – Create Together | 48×48 |
+| Palette ID | Name | Canvas Size |
+|------------|------|-------------|
+| marilyn_48x48 | Marilyn Monroe Portrait | 48×48 |
+| beatles_48x48 | The Beatles Portrait | 48×48 |
+| mickey_48x48 | Mickey Mouse Portrait | 48×48 |
+| world_map_128x80 | World Map | 128×80 |
+| elvis_48x48 | Elvis Presley Portrait | 48×48 |
+| art_project_48x48 | Art Project | 48×48 |
 
 ```python
-from legopic.data import list_available_sets, get_set_dimensions
+from mosaicpic.data import list_available_sets, get_set_dimensions
 
-# List all sets
+# List all palettes
 for set_id, name in list_available_sets():
     width, height = get_set_dimensions(set_id)
     print(f"{set_id}: {name} ({width}×{height})")
@@ -332,44 +332,41 @@ This ensures every canvas cell maps to image pixels with a uniform block size.
 - Image 100×90 → Canvas 10×10 ✗ (height stride differs)
 - Image 92×101 → Canvas 10×10 ✗ (width stride differs)
 
-## About LEGO Mosaics
+## About Tile Mosaics
 
-### What Are LEGO Mosaics?
+### What Are Tile Mosaics?
 
-LEGO mosaics are pixel-art style creations built using 1×1 round tiles (commonly called "studs" or "dots"). Each tile represents a single pixel, and when arranged on a baseplate, they form a cohesive image — similar to pointillism or cross-stitch patterns.
-
-The official **LEGO Art** line (sets like 31197, 31198, etc.) popularized this technique, offering curated color palettes and building instructions for iconic portraits and artwork.
+Tile mosaics are pixel-art style creations built using 1×1 round tiles. Each tile represents a single pixel, and when arranged on a baseplate, they form a cohesive image — similar to pointillism or cross-stitch patterns.
 
 ### The 1×1 Round Tile (Element 98138)
 
-The primary building block for LEGO mosaics is the **1×1 round plate** with design ID **98138**. This element:
+The primary building block for tile mosaics is the **1×1 round plate** with design ID **98138**. This element:
 
 - Has a smooth, circular top surface
-- Sits flat on baseplates and standard LEGO bricks
+- Sits flat on baseplates and standard bricks
 - Comes in 40+ official colors
 - Creates the characteristic "dotted" mosaic appearance
 
-### Where to Buy LEGO Tiles
+### Where to Buy Tiles
 
-Once you've designed your mosaic with `legopic`, you'll need to source the actual bricks. Here are the main marketplaces:
+Once you've designed your mosaic with `mosaicpic`, you'll need to source the actual tiles. Here are the main marketplaces:
 
 | Marketplace | Description |
 |-------------|-------------|
-| [BrickLink](https://www.bricklink.com/v2/search.page?q=98138#T=A) | The largest secondary LEGO marketplace. Search by element ID (98138) to find tiles in any color. |
+| [BrickLink](https://www.bricklink.com/v2/search.page?q=98138#T=A) | The largest secondary marketplace. Search by element ID (98138) to find tiles in any color. |
 | [BrickOwl](https://www.brickowl.com/search/catalog?query=98138) | Alternative marketplace with competitive pricing and international sellers. |
-| [LEGO Pick-a-Brick](https://www.lego.com/pick-and-build/pick-a-brick) | Official LEGO store. Limited color selection but guaranteed authenticity. |
 
 **Pro tip**: Use `session.export_bricklink_xml()` to generate a ready-to-upload wanted list for BrickLink, or `session.export_rebrickable_csv()` for Rebrickable. No manual counting needed!
 
-### Contributing New Colors & Sets
+### Contributing New Colors & Palettes
 
-The LEGO color palette evolves over time, and new Art sets are released regularly. **We welcome community contributions!**
+The color palette evolves over time. **We welcome community contributions!**
 
 If you'd like to add:
-- **New colors** — Add entries to `src/legopic/data/colors.csv`
-- **New sets** — Add set info to `sets.csv` and element mappings to `elements.csv`
+- **New colors** — Add entries to `src/mosaicpic/data/colors.csv`
+- **New palettes** — Add palette info to `sets.csv` and element mappings to `elements.csv`
 
-See the [Contributing](#contributing-new-colors-or-sets) section for validation rules and submit a PR. The CI will automatically verify data integrity.
+See the [Contributing](#contributing-new-colors-or-palettes) section for validation rules and submit a PR. The CI will automatically verify data integrity.
 
 ## API Reference
 
@@ -395,7 +392,7 @@ See the [Contributing](#contributing-new-colors-or-sets) section for validation 
 | Class | Description |
 |-------|-------------|
 | `Color(rgb, name=None)` | RGB color with optional name |
-| `Element(element_id, design_id, variant_id, count=None)` | LEGO element variant for inventory tracking |
+| `Element(element_id, design_id, variant_id, count=None)` | Tile element variant for inventory tracking |
 | `Cell(color, x=None, y=None)` | Single pixel/block with position |
 | `Image(array)` | Input image wrapper |
 | `Canvas(width, height)` | Output mosaic grid |
@@ -433,7 +430,7 @@ See the [Contributing](#contributing-new-colors-or-sets) section for validation 
 
 | Method | Description |
 |--------|-------------|
-| `Palette.from_set(set_id=None, standard_only=True)` | Load from LEGO set or all colors |
+| `Palette.from_set(set_id=None, standard_only=True)` | Load from palette or all colors |
 | `palette.colors` | List of unique Color objects |
 | `palette.elements` | List of all Element objects |
 | `palette.get_elements_for_color(color)` | Get element variants for a color |
@@ -442,7 +439,7 @@ See the [Contributing](#contributing-new-colors-or-sets) section for validation 
 
 | Method | Description |
 |--------|-------------|
-| `Canvas.from_set(set_id)` | Create empty canvas with set dimensions |
+| `Canvas.from_set(set_id)` | Create empty canvas with palette dimensions |
 | `canvas.get_cell(x, y)` | Get cell at coordinates |
 | `canvas.to_array()` | Convert to numpy RGB array |
 
@@ -461,8 +458,8 @@ See the [Contributing](#contributing-new-colors-or-sets) section for validation 
 
 ```bash
 # Clone the repository
-git clone https://github.com/zl3311/lego_image_converter.git
-cd lego_image_converter
+git clone https://github.com/zl3311/mosaicpic.git
+cd mosaicpic
 
 # Install with uv (recommended)
 uv sync --all-groups
@@ -478,7 +475,7 @@ pip install -e ".[dev]"
 uv run pytest
 
 # Run with coverage
-uv run pytest --cov=legopic --cov-report=term-missing
+uv run pytest --cov=mosaicpic --cov-report=term-missing
 ```
 
 ### Code Quality
@@ -491,12 +488,12 @@ uv run ruff check src/ tests/
 uv run ruff format src/ tests/
 
 # Type check
-uv run mypy src/legopic/
+uv run mypy src/mosaicpic/
 ```
 
-### Contributing New Colors or Sets
+### Contributing New Colors or Palettes
 
-When adding new LEGO colors or sets via PR, the CI automatically validates data integrity. The following checks run on every PR:
+When adding new colors or palettes via PR, the CI automatically validates data integrity. The following checks run on every PR:
 
 #### `colors.csv` Validation
 | Check | Description |
@@ -512,7 +509,7 @@ When adding new LEGO colors or sets via PR, the CI automatically validates data 
 | Check | Description |
 |-------|-------------|
 | Unique `set_id` | Primary key must be unique |
-| Unique names | Set names should not duplicate |
+| Unique names | Palette names should not duplicate |
 | Valid dimensions | Width and height must be positive integers |
 | Dimension limits | Canvas cannot exceed 1024×1024 studs |
 
@@ -527,7 +524,7 @@ When adding new LEGO colors or sets via PR, the CI automatically validates data 
 #### Cross-file Consistency
 | Check | Description |
 |-------|-------------|
-| Sets have elements | Every set must have at least one element |
+| Palettes have elements | Every palette must have at least one element |
 | Consistent `design_id` | Must match between `colors.csv` and `elements.csv` |
 
 Run these checks locally before submitting:
@@ -538,20 +535,20 @@ uv run pytest tests/unit/test_data_integrity.py -v
 
 ## Background
 
-This project was born from a passion for LEGO Art and the desire to create custom mosaic portraits.
+This project was born from a passion for mosaic art and the desire to create custom tile portraits.
 
-Originally created for [LEGO Art Project 21226](https://www.lego.com/en-us/product/art-project-create-together-21226) — a collaborative set designed for creative freedom — this package helps you prototype LEGO mosaic designs by:
+This package helps you prototype mosaic designs by:
 
-1. **Converting any image** to the constrained color palette of available LEGO tiles
+1. **Converting any image** to the constrained color palette of available tiles
 2. **Downsizing intelligently** to your target canvas dimensions (e.g., 48×48 studs)
 3. **Using perceptually accurate color matching** via the CIEDE2000 algorithm
 4. **Dithering for photo-realism** using error diffusion algorithms
 
-Whether you're recreating a family photo, a pet portrait, or pixel art, `legopic` lets you preview exactly how your design will look before ordering hundreds of tiles. No more guesswork — just load an image, pick a palette, and see the result instantly.
+Whether you're recreating a family photo, a pet portrait, or pixel art, `mosaicpic` lets you preview exactly how your design will look before ordering hundreds of tiles. No more guesswork — just load an image, pick a palette, and see the result instantly.
 
 ### Why Perceptual Color Matching?
 
-Simple RGB distance doesn't account for how humans actually perceive color. Two colors might be mathematically similar but look completely different to our eyes. `legopic` uses the **Delta E (CIE2000)** metric, which models human vision to find the closest *perceptual* match — resulting in mosaics that look right, not just mathematically correct.
+Simple RGB distance doesn't account for how humans actually perceive color. Two colors might be mathematically similar but look completely different to our eyes. `mosaicpic` uses the **Delta E (CIE2000)** metric, which models human vision to find the closest *perceptual* match — resulting in mosaics that look right, not just mathematically correct.
 
 ### Why Dithering?
 

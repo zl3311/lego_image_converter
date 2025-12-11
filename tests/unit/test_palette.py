@@ -7,8 +7,8 @@ with comprehensive coverage of valid and invalid inputs.
 import numpy as np
 import pytest
 
-from legopic import Color, Palette
-from legopic.models import Element
+from mosaicpic import Color, Palette
+from mosaicpic.models import Element
 
 
 class TestPaletteInit:
@@ -94,15 +94,15 @@ class TestPaletteFromSet:
     """Tests for Palette.from_set factory method."""
 
     def test_from_set_with_valid_id(self):
-        """from_set loads palette from known LEGO set."""
-        palette = Palette.from_set(31197)  # Andy Warhol
+        """from_set loads palette from known palette ID."""
+        palette = Palette.from_set("marilyn_48x48")
 
         assert len(palette) > 0
         assert len(palette.elements) > 0
 
     def test_from_set_elements_have_counts(self):
         """Elements loaded from set have inventory counts."""
-        palette = Palette.from_set(31197)
+        palette = Palette.from_set("marilyn_48x48")
 
         for element in palette.elements:
             assert element.count is not None
@@ -111,7 +111,7 @@ class TestPaletteFromSet:
     def test_from_set_invalid_id_raises(self):
         """from_set raises ValueError for unknown set ID."""
         with pytest.raises(ValueError, match="not found"):
-            Palette.from_set(99999)
+            Palette.from_set("nonexistent_palette")
 
     def test_from_set_no_id_loads_all_colors(self):
         """from_set with no ID loads all standard colors."""

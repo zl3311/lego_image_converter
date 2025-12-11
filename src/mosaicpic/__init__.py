@@ -1,14 +1,14 @@
-"""legopic: Convert images to Lego mosaics.
+"""mosaicpic: Convert images to tile mosaics.
 
-A Python package for converting images to Lego mosaic patterns by
-matching colors to available Lego brick colors.
+A Python package for converting images to mosaic tile patterns by
+matching colors to available tile colors.
 
 Example usage:
-    >>> from legopic import ConversionSession, Palette, load_image
+    >>> from mosaicpic import ConversionSession, Palette, load_image
     >>>
     >>> # Setup
     >>> image = load_image("photo.jpg")
-    >>> palette = Palette.from_set(31197)  # Andy Warhol set
+    >>> palette = Palette.from_set("marilyn_48x48")  # Marilyn Monroe palette
     >>> session = ConversionSession(image, palette, (48, 48))
     >>>
     >>> # Convert with built-in profile
@@ -16,7 +16,7 @@ Example usage:
     >>> print(f"Similarity: {session.similarity_score:.2f}")
     >>>
     >>> # Or use custom pipeline
-    >>> from legopic.pipeline import (
+    >>> from mosaicpic.pipeline import (
     ...     Pipeline, PoolStep, DitherStep,
     ...     PoolConfig, DitherConfig, DitherAlgorithm
     ... )
@@ -44,7 +44,7 @@ Example usage:
     >>> csv = session.export_rebrickable_csv()  # Rebrickable parts list
 """
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 from .core import (
     ConversionSession,

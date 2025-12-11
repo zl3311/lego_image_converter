@@ -6,7 +6,7 @@ with comprehensive coverage of valid and invalid inputs.
 
 import pytest
 
-from legopic.models import Element
+from mosaicpic.models import Element
 
 
 class TestElementInit:
@@ -173,9 +173,9 @@ class TestElementRepr:
 class TestElementUseCases:
     """Tests for Element real-world use cases."""
 
-    def test_typical_lego_element(self):
-        """Element works with typical LEGO element data."""
-        # Real LEGO element: White 1x1 Round Tile
+    def test_typical_tile_element(self):
+        """Element works with typical tile element data."""
+        # Real tile element: White 1x1 Round Tile
         elem = Element(element_id=6284572, design_id=98138, variant_id=2, count=100)
 
         assert elem.element_id == 6284572

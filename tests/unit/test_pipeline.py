@@ -11,8 +11,8 @@ This module provides comprehensive tests for the Pipeline class:
 import numpy as np
 import pytest
 
-from legopic import Color, Palette
-from legopic.pipeline import (
+from mosaicpic import Color, Palette
+from mosaicpic.pipeline import (
     ColorSpace,
     DitherAlgorithm,
     DitherConfig,

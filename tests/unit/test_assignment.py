@@ -3,9 +3,9 @@
 import numpy as np
 import pytest
 
-from legopic import Color, ConversionSession, Image, Palette
-from legopic.core.assignment import AssignmentResult, priority_greedy
-from legopic.models import Element
+from mosaicpic import Color, ConversionSession, Image, Palette
+from mosaicpic.core.assignment import AssignmentResult, priority_greedy
+from mosaicpic.models import Element
 
 
 class TestPriorityGreedy:
@@ -213,7 +213,7 @@ class TestOptimalAlgorithmPlaceholder:
 
         target_colors = np.array([[[255, 0, 0]]], dtype=np.uint8)
 
-        from legopic.core.assignment import optimal
+        from mosaicpic.core.assignment import optimal
 
         with pytest.warns(UserWarning, match="not yet implemented"):
             result = optimal(target_colors, palette)

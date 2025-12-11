@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from legopic import Image
+from mosaicpic import Image
 
 
 class TestImageInit:

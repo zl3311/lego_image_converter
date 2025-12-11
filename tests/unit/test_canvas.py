@@ -7,8 +7,8 @@ with comprehensive coverage of valid and invalid inputs.
 import numpy as np
 import pytest
 
-from legopic import Canvas, Color
-from legopic.models import Cell
+from mosaicpic import Canvas, Color
+from mosaicpic.models import Cell
 
 
 class TestCanvasInit:
@@ -92,15 +92,15 @@ class TestCanvasFromSet:
     """Tests for Canvas.from_set factory method."""
 
     def test_from_set_valid_id(self):
-        """from_set creates canvas with correct dimensions for known set."""
-        canvas = Canvas.from_set(31197)  # Andy Warhol: 48x48
+        """from_set creates canvas with correct dimensions for known palette."""
+        canvas = Canvas.from_set("marilyn_48x48")
 
         assert canvas.width == 48
         assert canvas.height == 48
 
     def test_from_set_world_map(self):
-        """from_set creates correct dimensions for World Map set."""
-        canvas = Canvas.from_set(31203)  # World Map: 128x80
+        """from_set creates correct dimensions for World Map palette."""
+        canvas = Canvas.from_set("world_map_128x80")
 
         assert canvas.width == 128
         assert canvas.height == 80
@@ -108,7 +108,7 @@ class TestCanvasFromSet:
     def test_from_set_invalid_id_raises(self):
         """from_set raises ValueError for unknown set ID."""
         with pytest.raises(ValueError, match="not found"):
-            Canvas.from_set(99999)
+            Canvas.from_set("nonexistent_palette")
 
 
 class TestCanvasFromCells:

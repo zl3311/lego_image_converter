@@ -17,8 +17,8 @@ Tests cover:
 import numpy as np
 import pytest
 
-from legopic import Color, Palette
-from legopic.pipeline import (
+from mosaicpic import Color, Palette
+from mosaicpic.pipeline import (
     ColorSpace,
     DitherAlgorithm,
     DitherConfig,

@@ -1,7 +1,7 @@
-"""Data integrity tests for LEGO color and set CSV files.
+"""Data integrity tests for tile color and palette CSV files.
 
 This module provides comprehensive validation of the CSV data files to ensure
-data quality and catch issues when contributors add new colors or sets via PRs.
+data quality and catch issues when contributors add new colors or palettes via PRs.
 
 Validates:
     - colors.csv: Primary key uniqueness, color consistency, RGB validity
@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 
 # Path to data directory
-DATA_DIR = Path(__file__).parent.parent.parent / "src" / "legopic" / "data"
+DATA_DIR = Path(__file__).parent.parent.parent / "src" / "mosaicpic" / "data"
 
 # Constraints
 MAX_CANVAS_DIMENSION = 1024  # Maximum allowed canvas width/height in studs
@@ -89,7 +89,7 @@ class TestColorsCSV:
         """Verify element_id is unique (primary key constraint).
 
         Each element_id should appear exactly once in colors.csv since it
-        uniquely identifies a specific LEGO element.
+        uniquely identifies a specific tile element.
         """
         element_ids: dict[str, list[int]] = defaultdict(list)
         for row_num, row in enumerate(colors_data, start=2):  # CSV row 2 is first data row
@@ -253,7 +253,7 @@ class TestSetsCSV:
         """Verify set names are unique.
 
         While technically allowed, duplicate names likely indicate a data entry
-        error since each LEGO Art set has a unique name.
+        error since each palette has a unique name.
         """
         names: dict[str, list[int]] = defaultdict(list)
         for row_num, row in enumerate(sets_data, start=2):

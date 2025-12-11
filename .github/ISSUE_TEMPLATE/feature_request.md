@@ -18,10 +18,10 @@ Explain how this feature would help your workflow.
 ## Example Code (Optional)
 ```python
 # How you envision the API working
-from legopic import ConversionSession, Palette, load_image
+from mosaicpic import ConversionSession, Palette, load_image
 
 image = load_image("my_photo.jpg")
-palette = Palette.from_set(31197)
+palette = Palette.from_set("marilyn_48x48")
 session = ConversionSession(image, palette, (48, 48))
 
 # Your proposed feature
@@ -33,4 +33,3 @@ Any alternative solutions or workarounds you've tried.
 
 ## Additional Context
 Any other context, mockups, or references.
-

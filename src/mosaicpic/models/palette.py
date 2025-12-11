@@ -1,7 +1,7 @@
-"""Palette model for managing available Lego colors.
+"""Palette model for managing available tile colors.
 
 A Palette represents the set of colors available for matching,
-typically derived from a specific Lego set's included pieces.
+typically derived from a specific palette's included pieces.
 
 The Palette stores a mapping from each unique Color to its available
 Element variants, supporting both color matching (needs unique colors)
@@ -24,7 +24,7 @@ class Palette:
     """A collection of available colors for matching.
 
     The Palette holds the colors that can be used when converting an image
-    to a Lego mosaic. Typically populated from a Lego set's element list.
+    to a tile mosaic. Typically populated from a palette's element list.
 
     The internal storage is a dict mapping Color -> list[Element], where:
     - Each Color key is unique by RGB
@@ -61,12 +61,12 @@ class Palette:
             self._color_elements = {color: [] for color in colors}
 
     @classmethod
-    def from_set(cls, set_id: int | None = None, standard_only: bool = True) -> "Palette":
-        """Create a Palette from a Lego set ID or all available colors.
+    def from_set(cls, set_id: str | None = None, standard_only: bool = True) -> "Palette":
+        """Create a Palette from a palette ID or all available colors.
 
         Args:
-            set_id (int | None): The Lego set identifier (e.g., 31197). If None,
-                loads all colors from the color database.
+            set_id (str | None): The palette identifier (e.g., "marilyn_48x48").
+                If None, loads all colors from the color database.
             standard_only (bool): If True and set_id is None, only include
                 standard (opaque) colors, excluding transparent/metallic/glow
                 variants. Ignored when set_id is specified. Default True.
@@ -78,8 +78,8 @@ class Palette:
             ValueError: If the set_id is not found in the data files.
 
         Example:
-            >>> # Load colors from a specific set
-            >>> palette = Palette.from_set(31197)  # Andy Warhol set
+            >>> # Load colors from a specific palette
+            >>> palette = Palette.from_set("marilyn_48x48")
             >>> # Load all standard colors
             >>> palette = Palette.from_set()  # All standard colors
             >>> # Load all colors including transparent/metallic

@@ -9,7 +9,7 @@ This module tests configuration dataclasses and enums:
 
 import pytest
 
-from legopic.pipeline import (
+from mosaicpic.pipeline import (
     ColorSpace,
     DitherAlgorithm,
     DitherConfig,

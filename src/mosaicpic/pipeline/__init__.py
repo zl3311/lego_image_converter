@@ -1,4 +1,4 @@
-"""Composable image processing pipeline for Lego mosaic conversion.
+"""Composable image processing pipeline for mosaic conversion.
 
 This module provides a pipeline-based approach to image processing,
 enabling flexible composition of steps like pooling, quantization,
@@ -12,7 +12,7 @@ Main Components:
     - Profiles: Built-in profiles (classic, sharp, dithered)
 
 Example:
-    >>> from legopic.pipeline import (
+    >>> from mosaicpic.pipeline import (
     ...     Pipeline, PoolStep, DitherStep,
     ...     PoolConfig, DitherConfig,
     ...     PoolMethod, ColorSpace, DitherAlgorithm, ScanOrder,

@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from legopic import Canvas, Color, ConversionSession, Image, Palette
+from mosaicpic import Canvas, Color, ConversionSession, Image, Palette
 
 
 class TestConversionSession:
@@ -169,8 +169,7 @@ class TestConversionSession:
 
     def test_session_with_set_palette(self, test_image):
         """Session works with Palette.from_set()."""
-        # 31197 is Andy Warhol's Marilyn Monroe set
-        palette = Palette.from_set(31197)
+        palette = Palette.from_set("marilyn_48x48")
         session = ConversionSession(test_image, palette, (10, 10))
         canvas = session.convert()
 
@@ -180,7 +179,7 @@ class TestConversionSession:
 
     def test_session_export_bricklink_xml(self, test_image):
         """export_bricklink_xml returns valid XML string."""
-        palette = Palette.from_set(31197)
+        palette = Palette.from_set("marilyn_48x48")
         session = ConversionSession(test_image, palette, (10, 10))
         session.convert()
 
@@ -197,7 +196,7 @@ class TestConversionSession:
 
     def test_session_export_rebrickable_csv(self, test_image):
         """export_rebrickable_csv returns valid CSV string."""
-        palette = Palette.from_set(31197)
+        palette = Palette.from_set("marilyn_48x48")
         session = ConversionSession(test_image, palette, (10, 10))
         session.convert()
 
@@ -218,7 +217,7 @@ class TestConversionSession:
 
     def test_session_export_before_convert_raises(self, test_image):
         """Export methods raise RuntimeError if convert() not called."""
-        palette = Palette.from_set(31197)
+        palette = Palette.from_set("marilyn_48x48")
         session = ConversionSession(test_image, palette, (10, 10))
 
         with pytest.raises(RuntimeError, match="No conversion yet"):
@@ -260,7 +259,7 @@ class TestPipelineProfiles:
 
     def test_custom_pipeline(self, test_image, test_palette):
         """Custom pipeline can be passed to convert()."""
-        from legopic.pipeline import (
+        from mosaicpic.pipeline import (
             DitherConfig,
             DitherStep,
             Pipeline,

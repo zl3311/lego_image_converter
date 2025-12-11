@@ -23,10 +23,10 @@ What actually happened.
 
 ## Code Example
 ```python
-from legopic import ConversionSession, Palette, load_image
+from mosaicpic import ConversionSession, Palette, load_image
 
 image = load_image("example.jpg")
-palette = Palette.from_set(31197)
+palette = Palette.from_set("marilyn_48x48")
 session = ConversionSession(image, palette, (48, 48))
 session.convert()
 # Error occurs here
@@ -35,8 +35,7 @@ session.convert()
 ## Environment
 - OS: [e.g., macOS 14.0, Ubuntu 22.04, Windows 11]
 - Python version: [e.g., 3.12.0]
-- legopic version: [e.g., 0.3.0]
+- mosaicpic version: [e.g., 0.6.0]
 
 ## Additional Context
 Add any other context, screenshots, or error messages here.
-

@@ -1,10 +1,10 @@
-"""Core algorithms for the legopic package.
+"""Core algorithms for the mosaicpic package.
 
-This module exports the main API and internal functions for image-to-Lego
+This module exports the main API and internal functions for image-to-mosaic
 conversion.
 
 Public API:
-    ConversionSession: Main API for image-to-Lego conversion workflow.
+    ConversionSession: Main API for image-to-mosaic conversion workflow.
 
 Internal Functions (exposed for advanced use):
     load_image: Load images from files or URLs.

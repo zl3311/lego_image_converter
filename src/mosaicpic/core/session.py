@@ -1,6 +1,6 @@
-"""Conversion session for managing the full image-to-Lego workflow.
+"""Conversion session for managing the full image-to-mosaic workflow.
 
-The ConversionSession is the main API for the legopic package. It owns
+The ConversionSession is the main API for the mosaicpic package. It owns
 the relationship between an image, palette, and canvas, handling conversion,
 re-conversion with preserved pins, color adjustments, and data exports.
 
@@ -25,7 +25,7 @@ from ..pipeline import IndexMap, Pipeline, PipelineContext, RGBImage, get_profil
 
 
 class ConversionSession:
-    """Manages the full image-to-Lego conversion workflow.
+    """Manages the full image-to-mosaic conversion workflow.
 
     A session owns the relationship between an image, palette, and canvas.
     It handles conversion, re-conversion with preserved pins, and exports.
@@ -52,11 +52,11 @@ class ConversionSession:
         similarity_score: Aggregate Delta E across all cells.
 
     Example:
-        >>> from legopic import ConversionSession, Palette, load_image
+        >>> from mosaicpic import ConversionSession, Palette, load_image
         >>>
         >>> # Setup (hard params)
         >>> image = load_image("photo.jpg")
-        >>> palette = Palette.from_set(31197)
+        >>> palette = Palette.from_set("marilyn_48x48")
         >>> session = ConversionSession(image, palette, (48, 48))
         >>>
         >>> # Convert with built-in profile
@@ -64,7 +64,7 @@ class ConversionSession:
         >>> print(f"Similarity: {session.similarity_score:.2f}")
         >>>
         >>> # Or use custom pipeline
-        >>> from legopic.pipeline import Pipeline, PoolStep, DitherStep, PoolConfig, DitherConfig
+        >>> from mosaicpic.pipeline import Pipeline, PoolStep, DitherStep, PoolConfig, DitherConfig
         >>> custom = Pipeline([
         ...     PoolStep(PoolConfig(output_size=(96, 96))),
         ...     DitherStep(),

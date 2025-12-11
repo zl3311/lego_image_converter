@@ -4,8 +4,8 @@ Tests cover initialization, attributes, and string representation
 with comprehensive coverage of valid inputs and edge cases.
 """
 
-from legopic import Color
-from legopic.models import Cell
+from mosaicpic import Color
+from mosaicpic.models import Cell
 
 
 class TestCellInit:

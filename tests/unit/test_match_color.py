@@ -7,7 +7,7 @@ with comprehensive coverage of various color matching scenarios.
 import numpy as np
 import pytest
 
-from legopic.core.match_color import match_color
+from mosaicpic.core.match_color import match_color
 
 
 class TestMatchColorValidation:

@@ -9,7 +9,7 @@ This module tests the profile registry system in profiles.py:
 
 import pytest
 
-from legopic.pipeline import (
+from mosaicpic.pipeline import (
     DitherStep,
     Pipeline,
     PoolStep,

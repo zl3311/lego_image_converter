@@ -6,8 +6,8 @@ with comprehensive coverage of valid inputs and error cases.
 
 import pytest
 
-from legopic import BOMEntry, Color, export_bricklink_xml, export_rebrickable_csv
-from legopic.data.loader import get_all_colors, get_color_external_ids
+from mosaicpic import BOMEntry, Color, export_bricklink_xml, export_rebrickable_csv
+from mosaicpic.data.loader import get_all_colors, get_color_external_ids
 
 
 class TestGetColorExternalIds:

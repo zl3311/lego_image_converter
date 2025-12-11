@@ -14,7 +14,7 @@ Tests verify:
 
 import numpy as np
 
-from legopic.pipeline.color_utils import (
+from mosaicpic.pipeline.color_utils import (
     lab_to_rgb,
     linear_to_rgb,
     rgb_to_lab,

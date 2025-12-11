@@ -1,6 +1,6 @@
-"""Canvas model representing the output Lego mosaic grid.
+"""Canvas model representing the output tile mosaic grid.
 
-A Canvas is the target grid where each cell represents a single Lego stud/block.
+A Canvas is the target grid where each cell represents a single tile/block.
 It can be constructed empty or from processed image data.
 """
 
@@ -16,14 +16,14 @@ from .color import Color
 
 
 class Canvas:
-    """Represents a Lego mosaic canvas as a 2D grid of Cells.
+    """Represents a tile mosaic canvas as a 2D grid of Cells.
 
     The Canvas is the output of the conversion process, where each Cell
-    represents a single Lego stud with its matched color.
+    represents a single tile with its matched color.
 
     Attributes:
-        width: Canvas width in studs/cells.
-        height: Canvas height in studs/cells.
+        width: Canvas width in tiles/cells.
+        height: Canvas height in tiles/cells.
         cells: 2D list of Cells, indexed as cells[y][x].
     """
 
@@ -51,20 +51,20 @@ class Canvas:
         ]
 
     @classmethod
-    def from_set(cls, set_id: int) -> "Canvas":
-        """Create an empty Canvas with dimensions from a LEGO set.
+    def from_set(cls, set_id: str) -> "Canvas":
+        """Create an empty Canvas with dimensions from a palette.
 
         Args:
-            set_id (int): LEGO set identifier (e.g., 31203 for World Map).
+            set_id (str): Palette identifier (e.g., "world_map_128x80").
 
         Returns:
-            Canvas: A new empty Canvas with the set's canvas dimensions.
+            Canvas: A new empty Canvas with the palette's canvas dimensions.
 
         Raises:
             ValueError: If the set_id is not found in the data files.
 
         Example:
-            >>> canvas = Canvas.from_set(31203)  # World Map: 128x80
+            >>> canvas = Canvas.from_set("world_map_128x80")
             >>> print(canvas)  # Canvas(width=128, height=80)
         """
         from ..data.loader import get_set_dimensions

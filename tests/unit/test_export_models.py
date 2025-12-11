@@ -4,8 +4,8 @@ Tests cover initialization, attributes, and post_init behavior
 with comprehensive coverage of valid inputs.
 """
 
-from legopic import Color
-from legopic.models import BOMEntry, CellData, Element
+from mosaicpic import Color
+from mosaicpic.models import BOMEntry, CellData, Element
 
 
 class TestBOMEntryInit:

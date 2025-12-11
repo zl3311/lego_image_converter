@@ -1,4 +1,4 @@
-"""Data models for the legopic package.
+"""Data models for the mosaicpic package.
 
 This module exports all model classes used to represent images, canvases,
 colors, cells, elements, palettes, and export data structures.
@@ -6,9 +6,9 @@ colors, cells, elements, palettes, and export data structures.
 Classes:
     Color: RGB color with optional name.
     Cell: Single pixel/block unit with color and position.
-    Element: LEGO piece variant with inventory.
+    Element: Tile piece variant with inventory.
     Image: Input image as grid of cells.
-    Canvas: Output Lego mosaic grid.
+    Canvas: Output mosaic grid.
     Palette: Collection of available colors for matching.
     BOMEntry: Bill of materials entry for building guide.
     CellData: Cell data for grid export.

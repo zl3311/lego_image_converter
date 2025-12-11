@@ -1,16 +1,16 @@
-"""Data loader for LEGO color and set information.
+"""Data loader for tile color and palette information.
 
 This module provides functions to load and parse the CSV data files containing
-LEGO color definitions, set information, and element mappings.
+tile color definitions, palette information, and element mappings.
 
 Data Files:
     - colors.csv: Maps element_id → color name, RGB, variant_id, is_standard.
-    - sets.csv: Maps set_id → set name, canvas dimensions.
+    - sets.csv: Maps set_id → palette name, canvas dimensions.
     - elements.csv: Maps set_id + element_id → piece count.
 
 Example:
-    >>> from legopic.data.loader import get_colors_for_set, get_all_colors
-    >>> palette_data = get_colors_for_set(31197)  # Andy Warhol set
+    >>> from mosaicpic.data.loader import get_colors_for_set, get_all_colors
+    >>> palette_data = get_colors_for_set("marilyn_48x48")
     >>> all_standard = get_all_colors(standard_only=True)
 
 Note:
@@ -99,7 +99,7 @@ def _load_colors_raw() -> dict[int, ColorRawData]:
 
 
 @functools.cache
-def _load_sets_raw() -> dict[int, SetRawData]:
+def _load_sets_raw() -> dict[str, SetRawData]:
     """Load sets.csv and return raw set data.
 
     Returns:
@@ -116,12 +116,12 @@ def _load_sets_raw() -> dict[int, SetRawData]:
         Results are cached after first call.
     """
     path = _get_data_path("sets.csv")
-    sets = {}
+    sets: dict[str, SetRawData] = {}
 
     with open(path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            set_id = int(row["set_id"])
+            set_id = row["set_id"]  # Now a string
             sets[set_id] = {
                 "name": row["name"],
                 "canvas_width": int(row["canvas_width"]),
@@ -132,7 +132,7 @@ def _load_sets_raw() -> dict[int, SetRawData]:
 
 
 @functools.cache
-def _load_elements_raw() -> dict[int, list[ElementRawData]]:
+def _load_elements_raw() -> dict[str, list[ElementRawData]]:
     """Load elements.csv and return raw element data grouped by set.
 
     Returns:
@@ -152,12 +152,12 @@ def _load_elements_raw() -> dict[int, list[ElementRawData]]:
         Results are cached after first call.
     """
     path = _get_data_path("elements.csv")
-    elements: dict[int, list[ElementRawData]] = {}
+    elements: dict[str, list[ElementRawData]] = {}
 
     with open(path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            set_id = int(row["set_id"])
+            set_id = row["set_id"]  # Now a string
             if set_id not in elements:
                 elements[set_id] = []
             elements[set_id].append(
@@ -171,14 +171,14 @@ def _load_elements_raw() -> dict[int, list[ElementRawData]]:
     return elements
 
 
-def get_colors_for_set(set_id: int) -> dict["Color", list["Element"]]:
-    """Get all colors available in a specific LEGO set.
+def get_colors_for_set(set_id: str) -> dict["Color", list["Element"]]:
+    """Get all colors available in a specific palette.
 
     Joins elements.csv with colors.csv to build a mapping from each unique
     Color to its available Element variants within the set.
 
     Args:
-        set_id (int): LEGO set identifier (e.g., 31197).
+        set_id (str): Palette identifier (e.g., "marilyn_48x48").
 
     Returns:
         dict[Color, list[Element]]: Dict mapping Color objects to list of
@@ -189,7 +189,7 @@ def get_colors_for_set(set_id: int) -> dict["Color", list["Element"]]:
         ValueError: If the set_id is not found in the data files.
 
     Example:
-        >>> colors = get_colors_for_set(31197)
+        >>> colors = get_colors_for_set("marilyn_48x48")
         >>> for color, elements in colors.items():
         ...     print(f"{color.name}: {len(elements)} variant(s)")
     """
@@ -309,11 +309,11 @@ def get_all_colors(standard_only: bool = True) -> dict["Color", list["Element"]]
     return result
 
 
-def get_set_dimensions(set_id: int) -> tuple[int, int]:
-    """Get the canvas dimensions for a LEGO set.
+def get_set_dimensions(set_id: str) -> tuple[int, int]:
+    """Get the canvas dimensions for a palette.
 
     Args:
-        set_id (int): LEGO set identifier (e.g., 31203).
+        set_id (str): Palette identifier (e.g., "world_map_128x80").
 
     Returns:
         tuple[int, int]: Tuple of (canvas_width, canvas_height) in studs.
@@ -322,7 +322,7 @@ def get_set_dimensions(set_id: int) -> tuple[int, int]:
         ValueError: If the set_id is not found.
 
     Example:
-        >>> width, height = get_set_dimensions(31203)  # World Map
+        >>> width, height = get_set_dimensions("world_map_128x80")
         >>> print(f"Canvas size: {width}x{height}")  # 128x80
     """
     sets_raw = _load_sets_raw()
@@ -335,11 +335,11 @@ def get_set_dimensions(set_id: int) -> tuple[int, int]:
     return (set_data["canvas_width"], set_data["canvas_height"])
 
 
-def get_set_info(set_id: int) -> SetRawData:
-    """Get full information about a LEGO set.
+def get_set_info(set_id: str) -> SetRawData:
+    """Get full information about a palette.
 
     Args:
-        set_id (int): LEGO set identifier.
+        set_id (str): Palette identifier.
 
     Returns:
         SetRawData: Dict with set information containing keys "name",
@@ -357,11 +357,11 @@ def get_set_info(set_id: int) -> SetRawData:
     return sets_raw[set_id].copy()
 
 
-def list_available_sets() -> list[tuple[int, str]]:
-    """List all available LEGO sets.
+def list_available_sets() -> list[tuple[str, str]]:
+    """List all available palettes.
 
     Returns:
-        list[tuple[int, str]]: List of (set_id, set_name) tuples, sorted
+        list[tuple[str, str]]: List of (set_id, set_name) tuples, sorted
             by set_id.
 
     Example:
@@ -406,7 +406,7 @@ def get_color_external_ids(color_name: str) -> dict[str, int]:
 
     Returns:
         dict[str, int]: Dict with keys "bl_id" (BrickLink color ID),
-            "rb_id" (Rebrickable color ID), and "design_id" (LEGO design ID).
+            "rb_id" (Rebrickable color ID), and "design_id" (design ID).
 
     Raises:
         ValueError: If the color name is not found.

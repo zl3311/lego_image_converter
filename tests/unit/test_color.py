@@ -2,7 +2,7 @@
 
 import pytest
 
-from legopic import Color
+from mosaicpic import Color
 
 
 class TestColorInit:

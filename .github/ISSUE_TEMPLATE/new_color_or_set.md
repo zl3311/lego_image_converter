@@ -1,14 +1,14 @@
 ---
-name: New Color or Set
-about: Submit a new LEGO color or Art set to the database
+name: New Color or Palette
+about: Submit a new tile color or palette to the database
 title: '[DATA] Add '
 labels: data
 assignees: ''
 ---
 
 ## Type
-- [ ] New LEGO Color
-- [ ] New LEGO Art Set
+- [ ] New Tile Color
+- [ ] New Palette
 - [ ] Both
 
 ## For New Colors
@@ -23,19 +23,19 @@ assignees: ''
 | Is Standard | true/false |
 
 ### Source
-Where did you find this color information? (BrickLink, LEGO.com, physical brick, etc.)
+Where did you find this color information? (BrickLink, official source, physical tile, etc.)
 
-## For New Sets
+## For New Palettes
 
-### Set Information
+### Palette Information
 | Field | Value |
 |-------|-------|
-| Set ID | |
-| Set Name | |
+| Palette ID | |
+| Palette Name | |
 | Canvas Width | |
 | Canvas Height | |
 
-### Elements in Set
+### Elements in Palette
 List the element IDs and quantities:
 ```
 element_id, count
@@ -45,8 +45,7 @@ element_id, count
 ```
 
 ### Source
-Link to official LEGO page or BrickLink inventory.
+Link to official page or inventory source.
 
 ## Additional Notes
 Any other relevant information.
-

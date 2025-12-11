@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from legopic import Color, Palette
-from legopic.pipeline import IndexMap, RGBImage
+from mosaicpic import Color, Palette
+from mosaicpic.pipeline import IndexMap, RGBImage
 
 
 class TestRGBImage:

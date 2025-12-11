@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from legopic import Canvas, Color, ConversionSession, Image, Palette
+from mosaicpic import Canvas, Color, ConversionSession, Image, Palette
 
 # =============================================================================
 # Test Configuration
@@ -68,7 +68,7 @@ JPEG_IMAGE = get_image_by_extension(".jpg") or get_image_by_extension(".jpeg")
 
 @pytest.fixture(scope="module")
 def standard_palette() -> Palette:
-    """A palette with common LEGO colors for testing (module-scoped)."""
+    """A palette with common tile colors for testing (module-scoped)."""
     return Palette(
         [
             Color((0, 0, 0), name="Black"),
@@ -136,12 +136,12 @@ class TestConversionSession:
                 assert cell.color is not None
                 assert cell.color.rgb in palette_rgbs
 
-    def test_jpeg_conversion_and_lego_set_palette(self):
-        """JPEG image converts successfully with real LEGO set palette.
+    def test_jpeg_conversion_and_preset_palette(self):
+        """JPEG image converts successfully with preset palette.
 
         This single test validates:
         - JPEG format loading works
-        - Real LEGO set palette (31197 Warhol) works
+        - Preset palette (marilyn_48x48) works
         - Canvas dimensions are correct
         - All cells have palette colors
         """
@@ -149,7 +149,7 @@ class TestConversionSession:
             pytest.skip("No JPEG test image available")
 
         image = Image.from_file(str(JPEG_IMAGE))
-        palette = Palette.from_set(31197)  # Andy Warhol's Marilyn Monroe
+        palette = Palette.from_set("marilyn_48x48")
         palette_rgbs = {c.rgb for c in palette.colors}
 
         try:

@@ -1,1 +1,1 @@
-"""Test utilities for legopic tests."""
+"""Test utilities for mosaicpic tests."""
